@@ -30,8 +30,11 @@ try:
 except (ImportError, ModuleNotFoundError) as e:
     import numpy as xp
 
-from few.utils.baseclasses import SchwarzschildEccentric, Pn5AAK, ParallelModuleBase
-from few.trajectory.inspiral import EMRIInspiral
+    gpu_available = False
+
+from few.utils.baseclasses import SchwarzschildEccentric, Pn5AAK
+from few.trajectory.pn5 import RunKerrGenericPn5Inspiral
+from few.trajectory.flux import RunSchwarzEccFluxInspiral
 from few.amplitude.interp2dcubicspline import Interp2DAmplitude
 from few.utils.utility import get_mismatch, xI_to_Y, p_to_y, check_for_file_download
 from few.amplitude.romannet import RomanAmplitude
