@@ -347,6 +347,12 @@ fund_freqs_ext = Extension(
     **cpu_extension,
 )
 
+Pn5_ext = Extension(
+    "pyPn5",
+    sources=["src/dIdt8H_5PNe10.cc", "src/Inspiral5PN.cc", "src/Pn5.pyx"],
+    **cpu_extension,
+)
+
 # Install cpu versions of gpu modules
 
 # need to copy cuda files to cpp for this special compiler we are using
@@ -387,8 +393,8 @@ spher_harm_ext = Extension(
 
 cpu_extensions = [
     matmul_cpu_ext,
-    inspiral_ext,
-    par_map_ext,
+    FLUX_ext,
+    Pn5_ext,
     interp_cpu_ext,
     spher_harm_ext,
     Interp2DAmplitude_ext,
@@ -432,7 +438,20 @@ setup(
     url="https://github.com/mikekatz04/FastEMRIWaveforms",
     ext_modules=extensions,
     packages=["few", "few.utils", "few.trajectory", "few.amplitude", "few.summation"],
-    py_modules=["few.waveform"],
+    py_modules=[
+        "few.trajectory.flux",
+        "few.trajectory.pn5",
+        "few.waveform",
+        "few.amplitude.romannet",
+        "few.amplitude.interp2dcubicspline",
+        "few.utils.modeselector",
+        "few.summation.directmodesum",
+        "few.utils.ylm",
+        "few.summation.interpolatedmodesum",
+        "few.utils.constants",
+        "few.utils.getfiles",
+        "few.utils.citations",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License (GPL)",
