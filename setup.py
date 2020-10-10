@@ -289,6 +289,10 @@ if run_cuda_install:
         **gpu_extension,
     )
 
+    gpuAAK_ext = Extension(
+        "pygpuAAK", sources=["src/gpuAAK.cu", "src/gpuAAKWrap.pyx"], **gpu_extension
+    )
+
 # build all cpu modules
 cpu_extension = dict(
     libraries=["gsl", "gslcblas", "lapack", "lapacke", "hdf5", "hdf5_hl"],
@@ -401,6 +405,10 @@ AAK_cpu_ext = Extension(
     **cpu_extension,
 )
 
+AAK_cpu_ext = Extension(
+    "pycpuAAK", sources=["src/gpuAAK.cpp", "src/gpuAAKWrap_cpu.pyx"], **cpu_extension
+)
+
 
 spher_harm_ext = Extension(
     "pySpinWeightedSpherHarm",
@@ -417,6 +425,7 @@ cpu_extensions = [
     spher_harm_ext,
     Interp2DAmplitude_ext,
     fund_freqs_ext,
+    AAK_cpu_ext,
 ]
 
 if run_cuda_install:
