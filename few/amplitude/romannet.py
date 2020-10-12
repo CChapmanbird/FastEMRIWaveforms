@@ -52,7 +52,7 @@ except (ImportError, ModuleNotFoundError) as e:
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
-class RomanAmplitude(AmplitudeBase, SchwarzschildEccentric, ParallelModuleBase):
+class RomanAmplitude(AmplitudeBase, SchwarzschildEccentric):
     """Calculate Teukolsky amplitudes with a ROMAN.
 
     ROMAN stands for reduced-order models with artificial neurons. Please see

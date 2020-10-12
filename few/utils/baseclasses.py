@@ -33,7 +33,7 @@ from scipy import constants as ct
 
 # try to import cupy
 try:
-    import cupy as cp
+    import cupy as xp
 
     gpu_available = True
 
@@ -42,13 +42,15 @@ except:
 
     gpu_available = False
 
+    gpu_available = False
+
 # Python imports
 from few.utils.constants import *
 from few.utils.citations import *
 
 
-class ParallelModuleBase(ABC):
-    """Base class for modules that can use GPUs.
+class WaveformBase(ABC):
+    """Base class for waveforms.
 
     This class mainly handles setting GPU usage.
 
@@ -57,7 +59,7 @@ class ParallelModuleBase(ABC):
 
     """
 
-    def attributes_ParallelModuleBase(self):
+    def attributes_WaveformBase(self):
         """
         attributes:
             use_gpu (bool): If True, use GPU.
@@ -66,8 +68,14 @@ class ParallelModuleBase(ABC):
         """
         pass
 
-    def __init__(self, *args, use_gpu=False, **kwargs):
+    def __init__(self, use_gpu=False, **kwargs):
+
         self.use_gpu = use_gpu
+
+        if use_gpu is True:
+            self.xp = xp
+        else:
+            self.xp = np
 
         # checks if gpu capability is available if requested
         self.sanity_check_gpu(use_gpu)
@@ -78,10 +86,16 @@ class ParallelModuleBase(ABC):
         """Indicator if the module has gpu capability"""
         raise NotImplementedError
 
+    @classmethod
+    @property
+    def allow_batching(self):
+        """Indicator if module allows batching"""
+        raise NotImplementedError
+
     @property
     def citation(self):
         """Return citations related to this module"""
-        return larger_few_citation + few_citation + few_software_citation
+        return few_citation
 
     @classmethod
     def __call__(*args, **kwargs):
@@ -126,15 +140,15 @@ class ParallelModuleBase(ABC):
 
         if use_gpu:
             if isinstance(kwargs, list):
-                for i, kwargs_i in enumerate(kwargs):
-                    kwargs[i]["use_gpu"] = use_gpu
+                for i, kwargs in enumerate(kwargs_list):
+                    kwargs_list[i]["use_gpu"] = use_gpu
             else:
                 kwargs["use_gpu"] = use_gpu
 
         return kwargs
 
 
-class SchwarzschildEccentric(ParallelModuleBase, ABC):
+class SchwarzschildEccentric(WaveformBase, ABC):
     """Base class for Schwarzschild eccentric waveforms.
 
     This class creates shared traits between different implementations of the
@@ -204,10 +218,7 @@ class SchwarzschildEccentric(ParallelModuleBase, ABC):
     def __init__(self, *args, use_gpu=False, **kwargs):
         ParallelModuleBase.__init__(self, *args, use_gpu=use_gpu, **kwargs)
 
-        if self.use_gpu:
-            xp = cp
-        else:
-            xp = np
+        WaveformBase.__init__(self, use_gpu=use_gpu, **kwargs)
 
         # some descriptive information
         self.background = "Schwarzschild"
@@ -435,7 +446,7 @@ class SchwarzschildEccentric(ParallelModuleBase, ABC):
             )
 
 
-class Pn5AAK(ABC):
+class Pn5AAK(WaveformBase, ABC):
     """Base class for Pn5AAK waveforms.
 
     TODO: Need to adjust docs.
@@ -507,135 +518,18 @@ class Pn5AAK(ABC):
 
     def __init__(self, use_gpu=False, **kwargs):
 
-        # set gpu usage
-        self.use_gpu = use_gpu
-        if use_gpu is True:
-            self.xp = xp
-        else:
-            self.xp = np
+        WaveformBase.__init__(self, use_gpu=use_gpu, **kwargs)
 
         # some descriptive information
         self.background = "Kerr"
         self.descriptor = "Generic Orbits"
-
-        # set mode index settings
-        self.lmax = 100
-        self.nmax = -5
-
-        self.ndim = 3
-        """
-
-        # fill all lmn mode values
-        md = []
-
-        for l in range(2, self.lmax + 1):
-            for m in range(0, l + 1):
-                for n in range(-self.nmax, self.nmax + 1):
-                    md.append([l, m, n])
-
-        # total number of modes in the model
-        self.num_modes = self.num_teuk_modes = len(md)
-
-        # mask for m == 0
-        m0mask = self.xp.array(
-            [
-                m == 0
-                for l in range(2, 10 + 1)
-                for m in range(0, l + 1)
-                for n in range(-30, 30 + 1)
-            ]
-        )
-
-        # sorts so that order is m=0, m<0, m>0
-        self.m0sort = m0sort = self.xp.concatenate(
-            [
-                self.xp.arange(self.num_teuk_modes)[m0mask],
-                self.xp.arange(self.num_teuk_modes)[~m0mask],
-            ]
-        )
-
-        # sorts the mode indexes
-        md = self.xp.asarray(md).T[:, m0sort].astype(self.xp.int32)
-
-        # store l m and n values
-        self.l_arr, self.m_arr, self.n_arr = md[0], md[1], md[2]
-
-        # adjust with .get method for cupy
-        try:
-            self.lmn_indices = {tuple(md_i): i for i, md_i in enumerate(md.T.get())}
-
-        except AttributeError:
-            self.lmn_indices = {tuple(md_i): i for i, md_i in enumerate(md.T)}
-
-        # store the mask as m != 0 is True
-        self.m0mask = self.m_arr != 0
-
-        # number of m >= 0
-        self.num_m_zero_up = len(self.m_arr)
-
-        # number of m == 0
-        self.num_m0 = len(self.xp.arange(self.num_teuk_modes)[m0mask])
-
-        # number of m > 0
-        self.num_m_1_up = self.num_m_zero_up - self.num_m0
-
-        # create final arrays to include -m modes
-        self.l_arr = self.xp.concatenate([self.l_arr, self.l_arr[self.m0mask]])
-        self.m_arr = self.xp.concatenate([self.m_arr, -self.m_arr[self.m0mask]])
-        self.n_arr = self.xp.concatenate([self.n_arr, self.n_arr[self.m0mask]])
-
-        # mask for m >= 0
-        self.m_zero_up_mask = self.m_arr >= 0
-
-        # find unique sets of (l,m)
-        # create inverse array to build full (l,m,n) from unique l and m
-        # also adjust for cupy
-        try:
-            temp, self.inverse_lm = np.unique(
-                np.asarray([self.l_arr.get(), self.m_arr.get()]).T,
-                axis=0,
-                return_inverse=True,
-            )
-
-        except AttributeError:
-            temp, self.inverse_lm = np.unique(
-                np.asarray([self.l_arr, self.m_arr]).T, axis=0, return_inverse=True
-            )
-
-        # unique values of l and m
-        self.unique_l, self.unique_m = self.xp.asarray(temp).T
-
-        # number of unique values
-        self.num_unique_lm = len(self.unique_l)
-
-        # creates special maps to the modes
-        self.index_map = {}
-        self.special_index_map = {}  # maps the minus m values to positive m
-        for i, (l, m, n) in enumerate(zip(self.l_arr, self.m_arr, self.n_arr)):
-
-            try:
-                l = l.item()
-                m = m.item()
-                n = n.item()
-
-            except AttributeError:
-                pass
-
-            # regular index to mode tuple
-            self.index_map[(l, m, n)] = i
-
-            # special map that gives m < 0 indices as m > 0 indices
-            self.special_index_map[(l, m, n)] = (
-                i if i < self.num_modes else i - self.num_m_1_up
-            )
-        """
 
     @property
     def citation(self):
         """Return citations of this class"""
         return few_citation + Pn5_citation
 
-    def sanity_check_viewing_angles(self, theta, phi):
+    def sanity_check_angles(self, qS, phiS, qK, phiK):
         """Sanity check on viewing angles.
 
         Make sure parameters are within allowable ranges.
@@ -651,11 +545,15 @@ class Pn5AAK(ABC):
             ValueError: If any of the trajectory points are not allowed.
 
         """
-        if theta < 0.0 or theta > np.pi:
+        if qS < 0.0 or qS > np.pi:
             raise ValueError("theta must be between 0 and pi.")
 
-        phi = phi % (2 * np.pi)
-        return (theta, phi)
+        if qK < 0.0 or qK > np.pi:
+            raise ValueError("theta must be between 0 and pi.")
+
+        phiS = phiS % (2 * np.pi)
+        phiK = phiK % (2 * np.pi)
+        return (qS, phiS, qK, phiK)
 
     def sanity_check_traj(self, p, e, Y):
         """Sanity check on parameters output from thte trajectory module.
@@ -696,6 +594,7 @@ class Pn5AAK(ABC):
         args:
             M (double): Massive black hole mass in solar masses.
             mu (double): compact object mass in solar masses.
+            a (double): Dimensionless spin of massive black hole.
             p0 (double): Initial semilatus rectum (dimensionless)
                 :math:`(10\leq p_0\leq 16 + 2e_0)`. See the documentation for
                 more information on :math:`p_0 \leq 10.0`.
@@ -707,7 +606,7 @@ class Pn5AAK(ABC):
 
         """
 
-        for val, key in [[M, "M"], [p0, "p0"], [e0, "e0"], [mu, "mu"]]:
+        for val, key in [[M, "M"], [p0, "p0"], [e0, "e0"], [mu, "mu"], [a, "a"]]:
             test = val < 0.0
             if test:
                 raise ValueError("{} is negative. It must be positive.".format(key))
@@ -719,7 +618,7 @@ class Pn5AAK(ABC):
                 )
             )
 
-        if Y0 > 1.0 or Y0 < 1.0:
+        if Y0 > 1.0 or Y0 < -1.0:
             raise ValueError(
                 "Y0 is greater than 1 or less than -1. Must be between -1 and 1."
             )
@@ -941,7 +840,7 @@ class SummationBase(ABC):
         """
         raise NotImplementedError
 
-    def __call__(self, t, *args, T=1.0, dt=10.0, t_window=None, **kwargs):
+    def __call__(self, t, *args, T=1.0, dt=10.0, **kwargs):
         """Common call function for summation modules.
 
         Provides a common interface for summation modules. It can adjust for
@@ -958,13 +857,7 @@ class SummationBase(ABC):
 
         """
 
-        if self.use_gpu:
-            xp = cp
-        else:
-            xp = np
-
-        n_pts = int(T * YRSID_SI / dt)
-        T = n_pts * dt
+        T = T * YRSID_SI
         # determine the output array setup
 
         # adjust based on if observations time is less than or more than trajectory time array

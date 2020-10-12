@@ -10,7 +10,16 @@ If you use all or any parts of this code, please cite [arxiv.org/2104.04582](htt
 
 Below is a quick set of instructions to get you started with `few`.
 
-0) [Install Anaconda](https://docs.anaconda.com/anaconda/install/) if you do not have it.
+0) [Install Anaconda](https://bhptoolkit.org/FastEMRIWaveforms/) if you do not have it.
+
+1) Create a virtual environment. **Note**: There is no available `conda` compiler for Windows. If you want to install for Windows, you will probably need to add libraries and include paths to the `setup.py` file.
+
+```
+conda create -n few_env -c conda-forge gcc_linux-64 gxx_linux-64 gsl lapack hdf5 numpy Cython scipy tqdm jupyter ipython h5py requests matplotlib python=3.7
+conda activate few_env
+```
+
+    If on MACOSX, substitute `gcc_linux-64` and `gxx_linus-64` with `clang_osx-64` and `clangxx_osx-64`.
 
 1) Clone the repository.
 

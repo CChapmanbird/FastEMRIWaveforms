@@ -373,7 +373,7 @@ class InterpolatedModeSum(SummationBase, SchwarzschildEccentric, ParallelModuleB
         n_arr,
         *args,
         dt=10.0,
-        **kwargs,
+        **kwargs
     ):
         """Interpolated summation function.
 
@@ -401,11 +401,6 @@ class InterpolatedModeSum(SummationBase, SchwarzschildEccentric, ParallelModuleB
             **kwargs (dict, placeholder): Added for future flexibility.
 
         """
-
-        if self.use_gpu:
-            xp = cp
-        else:
-            xp = np
 
         init_len = len(t)
         num_teuk_modes = teuk_modes.shape[1]
