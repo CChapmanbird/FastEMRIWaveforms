@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import warnings
 
+from few.trajectory.pn5 import RunKerrGenericPn5Inspiral
 from few.waveform import Pn5AAKWaveform
 from few.utils.utility import get_overlap, get_mismatch
 
@@ -38,7 +39,7 @@ class AAKWaveformTest(unittest.TestCase):
         mu = 1e1
         a = 0.2
         p0 = 14.0
-        e0 = 0.2
+        e0 = 0.9
         iota0 = 0.1
         Y0 = np.cos(iota0)
 
