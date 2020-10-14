@@ -37,7 +37,10 @@ Below is a quick set of instructions to get you started with ``few``.
 0) `Install Anaconda <https://docs.anaconda.com/anaconda/install/>`__ if
    you do not have it.
 
-1) Clone the repository.
+1) Create a virtual environment. **Note**: There is no available
+   ``conda`` compiler for Windows. If you want to install for Windows,
+   you will probably need to add libraries and include paths to the
+   ``setup.py`` file.
 
 ::
 

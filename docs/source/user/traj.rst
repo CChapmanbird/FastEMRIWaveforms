@@ -12,10 +12,18 @@ Trajectory Package
     :show-inheritance:
     :inherited-members:
 
-Generic Inspiral Generator from C/C++ functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adiabatic Inspiral in Schwarzschild Eccentric
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: few.trajectory.inspiral
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+5PN Generic Kerr Inspiral
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: few.trajectory.pn5
     :members:
     :show-inheritance:
     :inherited-members:
