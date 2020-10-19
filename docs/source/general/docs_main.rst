@@ -2,7 +2,7 @@
 FastEMRIWaveforms Publications
 ================================
 
-The Fast EMRI Waveforms papers can be found at `arxiv.org/2104.04582 <https://arxiv.org/abs/2104.04582>`_ and `arxiv.org/2008.06071 <https://arxiv.org/abs/2008.06071>`_. Below is a brief description of the model. Please refer to the paper for plots and more detailed information.
+The Fast EMRI Waveforms paper can be found at `arxiv.org/2008.06071 <https://arxiv.org/abs/2008.06071>`_. Below is a brief description of the paper, including plots. Please refer to the paper for more detailed information.
 
 Fast EMRI Waveform models are built for fast evaluation of the EMRI waveform summation equation, given by (`Drasco & Hughes 2006 <https://arxiv.org/abs/gr-qc/0509101>`_),
 
@@ -26,40 +26,8 @@ Package TODOs
 
 - add SNR calculator
 - run trajectory backward
+- add initial phases (special treatment needed)
 - zero out modes
 - shared memory based on CUDA_ARCH / upping shared allocation
 - deal with file locations and removing files from git history
 - add benchmarking function
-
-Change Log
-===========
-
-- 1.5.1: Added FD waveform. Removed an ``exp`` computation. Made module pickeable. Updated install. 
-- 1.4.10: M1 installation and small bug fixes. 
-- 1.4.9: Fixed omp issue. 
-- 1.4.8: Throwing python errors from C++. Separatrix bug fix. 
-- 1.4.7: Updates to readme and small fixes.
-- 1.4.6: A quick bug fix for GPU device issues.
-- 1.4.5: Separatrix c function generalized for Schwarzschild, generic Kerr, and circular, equatorial Kerr.
-- 1.4.4: Bug fix at zero eccentricity. Frequencies back in ODE. Fix for git pull issue with ode_base files.
-- 1.4.3: Bug fixes for additional arguments in SchEcc waveform base.
-- 1.4.2: Bug fixes for additional arguments in AAK waveform.
-- 1.4.1: Bug fixes.
-- 1.4.0: Ability to access OMP threads. Set CUDA device. Change fundamental frequency files to "utility". Initial error handler. Trajectory overhaul. get_at_t function updates.
-- 1.3.7: Fixed get_at_t functions. Added new GPU architecture. Removed oldest architecture. Fixed issue #30 & #32.
-- 1.3.6: Fixed Y0 < 0.0 in new AAK.
-- 1.3.5: Interpolation updated for 2d and bug fixes on derivatives.
-- 1.3.4: ccbin option added to setup.py.
-- 1.3.3: More bug fixes in Pn5 stepping over separatrix.
-- 1.3.2: 2 bug fixes in Pn5. Integrator stepping past separatrix. Randomly finding Nan returns from fundamental frequencies.
-- 1.3.1: Bug fix for root finding in xI. Y_to_xI in pn5 codes.
-- 1.3.0: x implemented instead of Y for cosine of inclination angle (includes conversion functions now). Python interface for KerrGeoConstantsOfMotion. Bug fix in examples. Updated citations. Changed constants to match LDC. More freedom in selecting specific modes.
-- 1.2.2: Bug fix for p(t), lapacke. Added e=0 for FastSchwarzschildEccentricFlux. Fixed major bug in 5PN trajectory.
-- 1.2.1: Bug fix for time at end of orbital evolution. :math:`\Omega_\theta` fixed.
-- 1.2.0: Generic waveform interface added. Angular protections added to AAK.
-- 1.1.5: Distance bug fixed. Wrong mass scale.
-- 1.1.4: Distance added to FEW.
-- 1.1.3: Schwarzschild eccentric fundamental frequencies added. Flux inspiral structure adjusted to this change. Change log added.
-- 1.1.2: Memory leak on GPU corrected.
-- 1.1.1: wget and lapack issues fixed.
-- 1.1.0: New AAK was added.
