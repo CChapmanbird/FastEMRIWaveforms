@@ -95,7 +95,7 @@ class WaveformBase(ABC):
     @property
     def citation(self):
         """Return citations related to this module"""
-        return few_citation
+        return few_citation + few_software_citation
 
     @classmethod
     def __call__(*args, **kwargs):
@@ -342,7 +342,7 @@ class SchwarzschildEccentric(WaveformBase, ABC):
     @property
     def citation(self):
         """Return citations of this class"""
-        return larger_few_citation + few_citation + few_software_citation
+        return few_citation + few_software_citation
 
     def sanity_check_viewing_angles(self, theta, phi):
         """Sanity check on viewing angles.
@@ -480,7 +480,7 @@ class Pn5AAK(WaveformBase, ABC):
     @property
     def citation(self):
         """Return citations of this class"""
-        return few_citation + Pn5_citation
+        return few_citation + few_software_citation + Pn5_citation
 
     def sanity_check_angles(self, qS, phiS, qK, phiK):
         """Sanity check on viewing angles.
@@ -598,7 +598,7 @@ class TrajectoryBase(ABC):
     @property
     def citation(self):
         """Return citation for this class"""
-        return larger_few_citation + few_citation + few_software_citation
+        return few_citation + few_software_citation
 
     @classmethod
     def get_inspiral(self, *args, **kwargs):
@@ -785,7 +785,7 @@ class SummationBase(ABC):
     @property
     def citation(self):
         """Return citation for this class"""
-        return larger_few_citation + few_citation + few_software_citation
+        return few_citation + few_software_citation
 
     @classmethod
     def sum(self, *args, **kwargs):
@@ -900,7 +900,7 @@ class AmplitudeBase(ABC):
     @property
     def citation(self):
         """Return citation for this class"""
-        return larger_few_citation + few_citation + few_software_citation
+        return few_citation + few_software_citation
 
     def __call__(self, *args, specific_modes=None, **kwargs):
         """Common call for Teukolsky amplitudes

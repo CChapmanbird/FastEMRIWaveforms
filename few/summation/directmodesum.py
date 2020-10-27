@@ -52,12 +52,7 @@ class DirectModeSum(SummationBase, SchwarzschildEccentric, ParallelModuleBase):
     @property
     def citation(self):
         """Return citations for this class"""
-        return larger_few_citation + few_citation + few_software_citation
-
-    @property
-    def gpu_capability(self):
-        """Confirms GPU capability"""
-        return True
+        return few_citation + few_software_citation
 
     def sum(self, t, teuk_modes, ylms, Phi_phi, Phi_r, m_arr, n_arr, *args, **kwargs):
         """Direct summation function.

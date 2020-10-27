@@ -453,14 +453,7 @@ class SchwarzschildEccentricWaveformBase(
     @property
     def citation(self):
         """Return citations related to this module"""
-        return (
-            larger_few_citation
-            + few_citation
-            + few_software_citation
-            + fd_citation
-            + romannet_citation
-            + FD_citation
-        )
+        return few_citation + few_software_citation + romannet_citation
 
     def __call__(
         self,
@@ -1375,7 +1368,7 @@ class Pn5AAKWaveform(Pn5AAK, ABC):
     def citation(self):
         """Return citations related to this module"""
         return (
-            few_citation
+            few_citation + few_software_citation
             + AAK_citation_1
             + AAK_citation_2
             + AK_citation
