@@ -326,28 +326,14 @@ Interp2DAmplitude_ext = Extension(
     **cpu_extension,
 )
 
-inspiral_ext = Extension(
-    "pyInspiral",
+FLUX_ext = Extension(
+    "pyFLUX",
     sources=[
-        "src/Utility.cc",
         "src/Interpolant.cc",
-        "src/dIdt8H_5PNe10.cc",
-        "src/ode.cc",
-        "src/Inspiral.cc",
-        "src/inspiralwrap.pyx",
+        "src/FundamentalFrequencies.cc",
+        "src/FluxInspiral.cc",
+        "src/FLUX.pyx",
     ],
-    **cpu_extension,
-)
-
-par_map_ext = Extension(
-    "pyParameterMap",
-    sources=["src/ParameterMapAAK.cc", "src/ParMap.pyx"],
-    **cpu_extension,
-)
-
-fund_freqs_ext = Extension(
-    "pyUtility",
-    sources=["src/Utility.cc", "src/utility_functions.pyx"],
     **cpu_extension,
 )
 
