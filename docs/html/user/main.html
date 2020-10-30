@@ -276,8 +276,8 @@ kwarg. For this class it is False.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.waveform.FastSchwarzschildEccentricFlux.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Phi_phi0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Phi_r0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_minus_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.FastSchwarzschildEccentricFlux.__call__" title="Permalink to this definition"></a></dt>
+<dt id="few.waveform.FastSchwarzschildEccentricFlux.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">p0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">phi</span></em>, <em class="sig-param"><span class="n">dist</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">show_progress</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">mode_selection</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.FastSchwarzschildEccentricFlux.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call function for SchwarzschildEccentric models.</p>
 <p>This function will take input parameters and produce Schwarzschild
 eccentric waveforms. It will use all of the modules preloaded to
@@ -292,13 +292,7 @@ See documentation for more information on <span class="math notranslate nohighli
 <li><p><strong>e0</strong> (<em>double</em>) – Initial eccentricity (<span class="math notranslate nohighlight">\(0.0\leq e_0\leq0.7\)</span>).</p></li>
 <li><p><strong>theta</strong> (<em>double</em>) – Polar viewing angle (<span class="math notranslate nohighlight">\(-\pi/2\leq\Theta\leq\pi/2\)</span>).</p></li>
 <li><p><strong>phi</strong> (<em>double</em>) – Azimuthal viewing angle.</p></li>
-<li><p><strong>*args</strong> (<em>list</em>) – extra args for trajectory model.</p></li>
-<li><p><strong>dist</strong> (<em>double</em><em>, </em><em>optional</em>) – Luminosity distance in Gpc. Default is None. If None,
-will return source frame.</p></li>
-<li><p><strong>Phi_phi0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_\phi\)</span>.
-Default is 0.0.</p></li>
-<li><p><strong>Phi_r0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_r\)</span>.
-Default is 0.0.</p></li>
+<li><p><strong>dist</strong> (<em>double</em>) – Luminosity distance in Gpc.</p></li>
 <li><p><strong>dt</strong> (<em>double</em><em>, </em><em>optional</em>) – Time between samples in seconds (inverse of
 sampling frequency). Default is 10.0.</p></li>
 <li><p><strong>T</strong> (<em>double</em><em>, </em><em>optional</em>) – Total observation time in years.
@@ -907,7 +901,7 @@ kwarg. For this class it is True.</p>
 
 <dl class="py method">
 <dt id="few.waveform.SlowSchwarzschildEccentricFlux.__call__">
-<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">p0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">phi</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">show_progress</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">mode_selection</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.SlowSchwarzschildEccentricFlux.__call__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">p0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">phi</span></em>, <em class="sig-param"><span class="n">dist</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">show_progress</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">mode_selection</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.SlowSchwarzschildEccentricFlux.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call function for SchwarzschildEccentric models.</p>
 <p>This function will take input parameters and produce Schwarzschild
 eccentric waveforms. It will use all of the modules preloaded to
@@ -922,13 +916,7 @@ See documentation for more information on <span class="math notranslate nohighli
 <li><p><strong>e0</strong> (<em>double</em>) – Initial eccentricity (<span class="math notranslate nohighlight">\(0.0\leq e_0\leq0.7\)</span>).</p></li>
 <li><p><strong>theta</strong> (<em>double</em>) – Polar viewing angle (<span class="math notranslate nohighlight">\(-\pi/2\leq\Theta\leq\pi/2\)</span>).</p></li>
 <li><p><strong>phi</strong> (<em>double</em>) – Azimuthal viewing angle.</p></li>
-<li><p><strong>*args</strong> (<em>list</em>) – extra args for trajectory model.</p></li>
-<li><p><strong>dist</strong> (<em>double</em><em>, </em><em>optional</em>) – Luminosity distance in Gpc. Default is None. If None,
-will return source frame.</p></li>
-<li><p><strong>Phi_phi0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_\phi\)</span>.
-Default is 0.0.</p></li>
-<li><p><strong>Phi_r0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_r\)</span>.
-Default is 0.0.</p></li>
+<li><p><strong>dist</strong> (<em>double</em>) – Luminosity distance in Gpc.</p></li>
 <li><p><strong>dt</strong> (<em>double</em><em>, </em><em>optional</em>) – Time between samples in seconds (inverse of
 sampling frequency). Default is 10.0.</p></li>
 <li><p><strong>T</strong> (<em>double</em><em>, </em><em>optional</em>) – Total observation time in years.
@@ -2558,318 +2546,8 @@ maps locations of -m values to +m values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.sanity_check_viewing_angles">
-<span class="sig-name descname"><span class="pre">sanity_check_viewing_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.sanity_check_viewing_angles" title="Permalink to this definition"></a></dt>
-<dd><p>Sanity check on viewing angles.</p>
-<p>Make sure parameters are within allowable ranges.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>theta</strong> (<em>double</em>) – Polar viewing angle.</p></li>
-<li><p><strong>phi</strong> (<em>double</em>) – Azimuthal viewing angle.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>(theta, phi). Phi is wrapped.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If any of the angular values are not allowed.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.sanity_check_traj">
-<span class="sig-name descname"><span class="pre">sanity_check_traj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.sanity_check_traj" title="Permalink to this definition"></a></dt>
-<dd><p>Sanity check on parameters output from thte trajectory module.</p>
-<p>Make sure parameters are within allowable ranges.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>p</strong> (<em>1D np.ndarray</em>) – Array of semi-latus rectum values produced by
-the trajectory module.</p></li>
-<li><p><strong>e</strong> (<em>1D np.ndarray</em>) – Array of eccentricity values produced by
-the trajectory module.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>ValueError</strong> – If any of the trajectory points are not allowed.</p></li>
-<li><p><strong>warn</strong> – If any points in the trajectory are allowable,
-    but outside calibration region.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.sanity_check_init">
-<span class="sig-name descname"><span class="pre">sanity_check_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.sanity_check_init" title="Permalink to this definition"></a></dt>
-<dd><p>Sanity check initial parameters.</p>
-<p>Make sure parameters are within allowable ranges.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>double</em>) – Massive black hole mass in solar masses.</p></li>
-<li><p><strong>mu</strong> (<em>double</em>) – compact object mass in solar masses.</p></li>
-<li><p><strong>p0</strong> (<em>double</em>) – Initial semilatus rectum (dimensionless)
-<span class="math notranslate nohighlight">\((10\leq p_0\leq 16 + 2e_0)\)</span>. See the documentation for
-more information on <span class="math notranslate nohighlight">\(p_0 \leq 10.0\)</span>.</p></li>
-<li><p><strong>e0</strong> (<em>double</em>) – Initial eccentricity <span class="math notranslate nohighlight">\((0\leq e_0\leq0.7)\)</span>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If any of the parameters are not allowed.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.__call__">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.__call__" title="Permalink to this definition"></a></dt>
-<dd><p>Method to call waveform model</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.adjust_gpu_usage">
-<span class="sig-name descname"><span class="pre">adjust_gpu_usage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.adjust_gpu_usage" title="Permalink to this definition"></a></dt>
-<dd><p>Adjust all inputs for gpu usage</p>
-<p>If user wants to use gpu, it will change all <code class="code docutils literal notranslate"><span class="pre">kwargs</span></code> in
-so that <code class="code docutils literal notranslate"><span class="pre">use_gpu=True</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>use_gpu</strong> (<em>bool</em>) – If True, use gpu resources.</p></li>
-<li><p><strong>kwargs</strong> (<em>list of dicts</em><em> or </em><em>dict</em>) – List of kwargs dictionaries or
-single dictionary for each constituent class in the
-waveform generator.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.attributes_ParallelModuleBase">
-<span class="sig-name descname"><span class="pre">attributes_ParallelModuleBase</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.attributes_ParallelModuleBase" title="Permalink to this definition"></a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.use_gpu">
-<span class="sig-name descname"><span class="pre">use_gpu</span></span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.use_gpu" title="Permalink to this definition"></a></dt>
-<dd><p>If True, use GPU.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.xp">
-<span class="sig-name descname"><span class="pre">xp</span></span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.xp" title="Permalink to this definition"></a></dt>
-<dd><p>Either numpy or CuPy based on gpu preference.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.utils.baseclasses.SchwarzschildEccentric.sanity_check_gpu">
-<span class="sig-name descname"><span class="pre">sanity_check_gpu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gpu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.baseclasses.SchwarzschildEccentric.sanity_check_gpu" title="Permalink to this definition"></a></dt>
-<dd><p>Check if this class has GPU capability</p>
-<p>If the user is requesting GPU usage, this will confirm the class has
-GPU capabilites.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>use_gpu</strong> (<em>bool</em>) – If True, the user is requesting GPU usage.</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – The user is requesting GPU usage, but this class does
-    not have that capability.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">few.waveform.</span></span><span class="sig-name descname"><span class="pre">SchwarzschildEccentricWaveformBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inspiral_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inspiral_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ylm_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_selector_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_gpu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_amps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#few.utils.baseclasses.SchwarzschildEccentric" title="few.utils.baseclasses.SchwarzschildEccentric"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchwarzschildEccentric</span></code></a>, <a class="reference internal" href="#few.utils.baseclasses.ParallelModuleBase" title="few.utils.baseclasses.ParallelModuleBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParallelModuleBase</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
-<p>Base class for the actual Schwarzschild eccentric waveforms.</p>
-<p>This class carries information and methods that are common to any
-implementation of Schwarzschild eccentric waveforms. These include
-initialization and the actual base code for building a waveform. This base
-code calls the various modules chosen by the user or according to the
-predefined waveform classes available. See
-<a class="reference internal" href="#few.utils.baseclasses.SchwarzschildEccentric" title="few.utils.baseclasses.SchwarzschildEccentric"><code class="xref py py-class docutils literal notranslate"><span class="pre">few.utils.baseclasses.SchwarzschildEccentric</span></code></a> for information
-high level information on these waveform models.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inspiral_module</strong> (<em>obj</em>) – Class object representing the module
-for creating the inspiral. This returns the phases and orbital
-parameters. See <a class="reference internal" href="traj.html#trajectory-label"><span class="std std-ref">Trajectory Package</span></a>.</p></li>
-<li><p><strong>amplitude_module</strong> (<em>obj</em>) – Class object representing the module for
-generating amplitudes. See <a class="reference internal" href="amp.html#amplitude-label"><span class="std std-ref">Amplitude Package</span></a> for more
-information.</p></li>
-<li><p><strong>sum_module</strong> (<em>obj</em>) – Class object representing the module for summing the
-final waveform from the amplitude and phase information. See
-<a class="reference internal" href="sum.html#summation-label"><span class="std std-ref">Summation Package</span></a>.</p></li>
-<li><p><strong>inspiral_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Optional kwargs to pass to the
-inspiral generator. <strong>Important Note</strong>: These kwargs are passed
-online, not during instantiation like other kwargs here. Default is
-{}. This is stored as an attribute.</p></li>
-<li><p><strong>amplitude_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Optional kwargs to pass to the
-amplitude generator during instantiation. Default is {}.</p></li>
-<li><p><strong>sum_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Optional kwargs to pass to the
-sum module during instantiation. Default is {}.</p></li>
-<li><p><strong>Ylm_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Optional kwargs to pass to the
-Ylm generator during instantiation. Default is {}.</p></li>
-<li><p><strong>mode_selector_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Optional kwargs to pass to the
-mode selector during instantiation. Default is {}.</p></li>
-<li><p><strong>use_gpu</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use GPU resources. Default is False.</p></li>
-<li><p><strong>num_threads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of parallel threads to use in OpenMP.
-If <code class="code docutils literal notranslate"><span class="pre">None</span></code>, will not set the global variable <code class="code docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code>.
-Default is None.</p></li>
-<li><p><strong>normalize_amps</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, it will normalize amplitudes
-to flux information output from the trajectory modules. Default
-is True. This is stored as an attribute.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.attributes_SchwarzschildEccentricWaveformBase">
-<span class="sig-name descname"><span class="pre">attributes_SchwarzschildEccentricWaveformBase</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.attributes_SchwarzschildEccentricWaveformBase" title="Permalink to this definition"></a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.inspiral_generator">
-<span class="sig-name descname"><span class="pre">inspiral_generator</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.inspiral_generator" title="Permalink to this definition"></a></dt>
-<dd><p>instantiated trajectory module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.amplitude_generator">
-<span class="sig-name descname"><span class="pre">amplitude_generator</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.amplitude_generator" title="Permalink to this definition"></a></dt>
-<dd><p>instantiated amplitude module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.ylm_gen">
-<span class="sig-name descname"><span class="pre">ylm_gen</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.ylm_gen" title="Permalink to this definition"></a></dt>
-<dd><p>instantiated ylm module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.create_waveform">
-<span class="sig-name descname"><span class="pre">create_waveform</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.create_waveform" title="Permalink to this definition"></a></dt>
-<dd><p>instantiated summation module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id15">
-<span class="sig-name descname"><span class="pre">ylm_gen</span></span><a class="headerlink" href="#id15" title="Permalink to this definition"></a></dt>
-<dd><p>instantiated Ylm module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.mode_selector">
-<span class="sig-name descname"><span class="pre">mode_selector</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.mode_selector" title="Permalink to this definition"></a></dt>
-<dd><p>instantiated mode selection module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.num_teuk_modes">
-<span class="sig-name descname"><span class="pre">num_teuk_modes</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.num_teuk_modes" title="Permalink to this definition"></a></dt>
-<dd><p>number of Teukolsky modes in the model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">ls,</span> <span class="pre">ms,</span> <span class="pre">ns</span></span></dt>
-<dd><p>Arrays of mode indices <span class="math notranslate nohighlight">\((l,m,n)\)</span>
-after filtering operation. If no filtering, these are equivalent
-to l_arr, m_arr, n_arr.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>1D int xp.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.xp">
-<span class="sig-name descname"><span class="pre">xp</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.xp" title="Permalink to this definition"></a></dt>
-<dd><p>numpy or cupy based on gpu usage.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>obj</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.num_modes_kept">
-<span class="sig-name descname"><span class="pre">num_modes_kept</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.num_modes_kept" title="Permalink to this definition"></a></dt>
-<dd><p>Number of modes for final waveform after mode
-selection.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.citation">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">citation</span></span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.citation" title="Permalink to this definition"></a></dt>
-<dd><p>Return citations related to this module</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="few.waveform.SchwarzschildEccentricWaveformBase.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Phi_phi0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Phi_r0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_minus_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.__call__" title="Permalink to this definition"></a></dt>
+<dt id="few.waveform.SchwarzschildEccentricWaveformBase.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">p0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">phi</span></em>, <em class="sig-param"><span class="n">dist</span></em>, <em class="sig-param"><span class="n">dt</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">show_progress</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">mode_selection</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.waveform.SchwarzschildEccentricWaveformBase.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call function for SchwarzschildEccentric models.</p>
 <p>This function will take input parameters and produce Schwarzschild
 eccentric waveforms. It will use all of the modules preloaded to
@@ -2877,20 +2555,9 @@ compute desired outputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>M</strong> (<em>double</em>) – Mass of larger black hole in solar masses.</p></li>
-<li><p><strong>mu</strong> (<em>double</em>) – Mass of compact object in solar masses.</p></li>
-<li><p><strong>p0</strong> (<em>double</em>) – Initial semilatus rectum (<span class="math notranslate nohighlight">\(10\leq p_0\leq16 + e_0\)</span>).
-See documentation for more information on <span class="math notranslate nohighlight">\(p_0&lt;10\)</span>.</p></li>
-<li><p><strong>e0</strong> (<em>double</em>) – Initial eccentricity (<span class="math notranslate nohighlight">\(0.0\leq e_0\leq0.7\)</span>).</p></li>
-<li><p><strong>theta</strong> (<em>double</em>) – Polar viewing angle (<span class="math notranslate nohighlight">\(-\pi/2\leq\Theta\leq\pi/2\)</span>).</p></li>
+<li><p><strong>theta</strong> (<em>double</em>) – Polar viewing angle.</p></li>
 <li><p><strong>phi</strong> (<em>double</em>) – Azimuthal viewing angle.</p></li>
-<li><p><strong>*args</strong> (<em>list</em>) – extra args for trajectory model.</p></li>
-<li><p><strong>dist</strong> (<em>double</em><em>, </em><em>optional</em>) – Luminosity distance in Gpc. Default is None. If None,
-will return source frame.</p></li>
-<li><p><strong>Phi_phi0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_\phi\)</span>.
-Default is 0.0.</p></li>
-<li><p><strong>Phi_r0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_r\)</span>.
-Default is 0.0.</p></li>
+<li><p><strong>dist</strong> (<em>double</em>) – Luminosity distance in Gpc.</p></li>
 <li><p><strong>dt</strong> (<em>double</em><em>, </em><em>optional</em>) – Time between samples in seconds (inverse of
 sampling frequency). Default is 10.0.</p></li>
 <li><p><strong>T</strong> (<em>double</em><em>, </em><em>optional</em>) – Total observation time in years.

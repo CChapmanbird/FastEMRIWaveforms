@@ -150,10 +150,10 @@ class WaveformTest(unittest.TestCase):
         batch_size = int(1e4)
 
         slow_wave = slow(
-            M, mu, p0, e0, theta, phi, dist=dist, T=T, dt=dt, batch_size=batch_size
+            M, mu, p0, e0, theta, phi, dist, T=T, dt=dt, batch_size=batch_size
         )
 
-        fast_wave = fast(M, mu, p0, e0, theta, phi, dist=dist, T=T, dt=dt)
+        fast_wave = fast(M, mu, p0, e0, theta, phi, dist, T=T, dt=dt)
 
         mm = get_mismatch(slow_wave, fast_wave, use_gpu=gpu_available)
 
@@ -161,7 +161,7 @@ class WaveformTest(unittest.TestCase):
 
         # test_rk4
         fast.inspiral_kwargs["use_rk4"] = True
-        fast_wave = fast(M, mu, p0, e0, theta, phi, dist=dist, T=T, dt=dt)
+        fast_wave = fast(M, mu, p0, e0, theta, phi, dist, T=T, dt=dt)
 
 
 def amplitude_test(amp_class):
