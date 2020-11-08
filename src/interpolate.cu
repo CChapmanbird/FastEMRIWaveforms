@@ -543,9 +543,21 @@ void make_waveform(cmplx *waveform,
     int start = 0;
     int end = num_teuk_here;
     int diff = 1;
-#endif // __CUDACC__
-    for (int i = start; i < end; i += diff)
+    #ifdef __USE_OMP__
+    #pragma omp parallel for
+    #endif // __USE_OMP__
+    #endif
+    for (int i=start; i<end; i+=diff)
     {
+
+        // fill mode values and Ylms
+        int ind_re = old_ind*(2*num_teuk_modes+num_pars) + (init_ind + i);
+        int ind_im = old_ind*(2*num_teuk_modes+num_pars)  + num_teuk_modes + (init_ind + i);
+        mode_re_y[i] = interp_array[0 * num_base + ind_re]; mode_re_c1[i] = interp_array[1 * num_base + ind_re];
+        mode_re_c2[i] = interp_array[2 * num_base + ind_re]; mode_re_c3[i] = interp_array[3 * num_base + ind_re];
+
+        mode_im_y[i] = interp_array[0 * num_base + ind_im]; mode_im_c1[i] = interp_array[1 * num_base + ind_im];
+        mode_im_c2[i] = interp_array[2 * num_base + ind_im]; mode_im_c3[i] = interp_array[3 * num_base + ind_im];
 
       // fill mode values and Ylms
       int ind_re = old_ind * (2 * num_teuk_modes + num_pars) + (init_ind + i);
