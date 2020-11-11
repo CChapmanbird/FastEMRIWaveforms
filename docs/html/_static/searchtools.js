@@ -149,22 +149,23 @@ if (typeof splitQuery === "undefined") {
 /**
  * Search Module
  */
-const Search = {
-  _index: null,
-  _queued_query: null,
-  _pulse_status: -1,
+var Search = {
 
-  htmlToText: (htmlString) => {
-    const htmlElement = document
-      .createRange()
-      .createContextualFragment(htmlString);
-    _removeChildren(htmlElement.querySelectorAll(".headerlink"));
-    const docContent = htmlElement.querySelector('[role="main"]');
-    if (docContent !== undefined) return docContent.textContent;
-    console.warn(
-      "Content block not found. Sphinx search tries to obtain it via '[role=main]'. Could you check your theme or template."
-    );
-    return "";
+  _index : null,
+  _queued_query : null,
+  _pulse_status : -1,
+
+  htmlToText : function(htmlString) {
+      var virtualDocument = document.implementation.createHTMLDocument('virtual');
+      var htmlElement = $(htmlString, virtualDocument);
+      htmlElement.find('.headerlink').remove();
+      docContent = htmlElement.find('[role=main]')[0];
+      if(docContent === undefined) {
+          console.warn("Content block not found. Sphinx search tries to obtain it " +
+                       "via '[role=main]'. Could you check your theme or template.");
+          return "";
+      }
+      return docContent.textContent || docContent.innerText;
   },
 
   init: () => {

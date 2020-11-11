@@ -202,33 +202,19 @@ const Documentation = {
     if (DOCUMENTATION_OPTIONS.COLLAPSE_INDEX) togglerElements.forEach(toggler);
   },
 
-  initOnKeyListeners: () => {
-    // only install a listener if it is really needed
-    if (
-      !DOCUMENTATION_OPTIONS.NAVIGATION_WITH_KEYS &&
-      !DOCUMENTATION_OPTIONS.ENABLE_SEARCH_SHORTCUTS
-    )
-      return;
-
-    const blacklistedElements = new Set([
-      "TEXTAREA",
-      "INPUT",
-      "SELECT",
-      "BUTTON",
-    ]);
-    document.addEventListener("keydown", (event) => {
-      if (blacklistedElements.has(document.activeElement.tagName)) return; // bail for input elements
-      if (event.altKey || event.ctrlKey || event.metaKey) return; // bail with special keys
-
-      if (!event.shiftKey) {
-        switch (event.key) {
-          case "ArrowLeft":
-            if (!DOCUMENTATION_OPTIONS.NAVIGATION_WITH_KEYS) break;
-
-            const prevLink = document.querySelector('link[rel="prev"]');
-            if (prevLink && prevLink.href) {
-              window.location.href = prevLink.href;
-              event.preventDefault();
+  initOnKeyListeners: function() {
+    $(document).keydown(function(event) {
+      var activeElementType = document.activeElement.tagName;
+      // don't navigate when in search box, textarea, dropdown or button
+      if (activeElementType !== 'TEXTAREA' && activeElementType !== 'INPUT' && activeElementType !== 'SELECT'
+          && activeElementType !== 'BUTTON' && !event.altKey && !event.ctrlKey && !event.metaKey
+          && !event.shiftKey) {
+        switch (event.keyCode) {
+          case 37: // left
+            var prevHref = $('link[rel="prev"]').prop('href');
+            if (prevHref) {
+              window.location.href = prevHref;
+              return false;
             }
             break;
           case "ArrowRight":
