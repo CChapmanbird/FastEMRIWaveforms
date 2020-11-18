@@ -260,7 +260,7 @@ void fill_final_derivs(double *t_arr, double *interp_array,
     int end2 = length - 1;
     int diff2 = 1;
 
-    #pragma omp parrallel
+    #pragma omp parallel for
     #endif
 
     for (int interp_i= start1;

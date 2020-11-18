@@ -255,7 +255,13 @@ class CubicSplineInterpolant(ParallelModuleBase):
         elif tnew.ndim == 1:
             tnew = xp.tile(tnew, (self.t.shape[0], 1))
 
-        tnew = xp.atleast_2d(tnew)
+        out = (
+            self.y[:, inds]
+            + self.c1[:, inds] * x
+            + self.c2[:, inds] * x2
+            + self.c3[:, inds] * x3
+        )
+        return out.squeeze()
 
         # get indices into spline
         inds, inds_bad_left, inds_bad_right = self._get_inds(tnew)
