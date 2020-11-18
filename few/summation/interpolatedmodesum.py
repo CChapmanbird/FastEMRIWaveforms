@@ -130,21 +130,15 @@ class CubicSplineInterpolant(ParallelModuleBase):
         else:
             raise ValueError("t must be 1 or 2 dimensions.")
 
+        self.t = t.astype(xp.float64)
         # perform interpolation
         self.interpolate_arrays(
-            self.t,
-            interp_array,
-            ninterps,
-            length,
-            B,
-            upper_diag,
-            diag,
-            lower_diag,
+            self.t, interp_array, ninterps, length, B, upper_diag, diag, lower_diag,
         )
 
         # set up storage of necessary arrays
 
-        self.interp_array = xp.transpose(
+        self.interp_array = self.xp.transpose(
             interp_array.reshape(self.reshape_shape), [0, 2, 1]
         ).flatten()
 

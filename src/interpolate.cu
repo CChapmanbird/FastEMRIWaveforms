@@ -182,29 +182,19 @@ void set_spline_constants(double *t_arr, double *interp_array, double *B,
   int end2 = length - 1;
   int diff2 = 1;
 
+    #pragma omp parallel for
+    #endif
+    for (int interp_i= start1;
+         interp_i<end1; // 2 for re and im
+         interp_i+= diff1)
+         {
 
 #endif // __CUDACC__
 
-  for (int interp_i = start1;
-       interp_i < end1; // 2 for re and im
-       interp_i += diff1)
-  {
-
-    for (int i = start2;
-         i < end2;
-         i += diff2)
-    {
-
-      dt = t_arr[interp_i * length + i + 1] - t_arr[interp_i * length + i];
-
-      int lead_ind = interp_i * length;
-      fill_coefficients(i, length, &B[lead_ind], dt,
-                        &interp_array[0 * ninterps * length + lead_ind],
-                        &interp_array[1 * ninterps * length + lead_ind],
-                        &interp_array[2 * ninterps * length + lead_ind],
-                        &interp_array[3 * ninterps * length + lead_ind]);
-    }
-  }
+                int lead_ind = interp_i*length;
+                prep_splines(i, length, &B[lead_ind], &upper_diag[lead_ind], &diag[lead_ind], &lower_diag[lead_ind], t_arr, &y_all[interp_i*length]);
+            }
+        }
 }
 
 // wrapper for cusparse solution for coefficients from banded matrix
@@ -255,13 +245,22 @@ void fill_final_derivs(double *t_arr, double *interp_array,
     #ifdef __CUDACC__
     int start1 = blockIdx.x*blockDim.x + threadIdx.x;
     int end1 = ninterps;
-    int diff1 = blockDim.x * gridDim.x;
+    int diff1 = blockDim.y*gridDim.y;
+
+    int start2 = blockIdx.x*blockDim.x + threadIdx.x;
+    int end2 = length - 1;
+    int diff2 = blockDim.x * gridDim.x;
     #else
 
     int start1 = 0;
     int end1 = ninterps;
     int diff1 = 1;
 
+    int start2 = 0;
+    int end2 = length - 1;
+    int diff2 = 1;
+
+    #pragma omp parrallel
     #endif
 
     for (int interp_i= start1;
