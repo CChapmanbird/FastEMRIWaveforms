@@ -83,12 +83,7 @@ class CubicSplineInterpolant(ParallelModuleBase):
         else:
             self.interpolate_arrays = interpolate_arrays_wrap_cpu
 
-        if self.use_gpu:
-            xp = cp
-        else:
-            xp = np
-
-        y_all = xp.atleast_2d(y_all)
+        y_all = self.xp.atleast_2d(y_all)
 
         # hardcoded,only cubic spline is available
         self.degree = 3
