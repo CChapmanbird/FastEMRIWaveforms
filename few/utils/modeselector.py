@@ -21,7 +21,6 @@ import numpy as np
 from few.utils.citations import *
 from few.utils.utility import get_fundamental_frequencies
 from few.utils.constants import *
-from few.utils.baseclasses import ParallelModuleBase
 
 # check for cupy
 try:
@@ -57,14 +56,15 @@ class ModeSelector(ParallelModuleBase):
             sennsitivity is used to weight the mode values when determining which
             modes to keep. **Note**: if the sensitivity function is provided,
             and GPUs are used, then this function must accept CuPy arrays as input.
-        **kwargs (dict, optional): Keyword arguments for the base classes:
-            :class:`few.utils.baseclasses.ParallelModuleBase`.
-            Default is {}.
+        use_gpu (bool, optional): If True, allocate arrays for usage on a GPU.
+            Default is False.
 
     """
 
-    def __init__(self, m0mask, sensitivity_fn=None, **kwargs):
-        ParallelModuleBase.__init__(self, **kwargs)
+    def __init__(self, m0mask, sensitivity_fn=None, use_gpu=False):
+
+        if use_gpu:
+            self.xp = xp
 
         if self.use_gpu:
             xp = cp
@@ -84,6 +84,8 @@ class ModeSelector(ParallelModuleBase):
     def gpu_capability(self):
         """Confirms GPU capability"""
         return True
+
+        self.sensitivity_fn = sensitivity_fn
 
     def attributes_ModeSelector(self):
         """
@@ -169,21 +171,21 @@ class ModeSelector(ParallelModuleBase):
 
             # get frequencies in Hz
             f_Phi, f_omega, f_r = OmegaPhi, OmegaTheta, OmegaR = (
-                xp.asarray(OmegaPhi) / (Msec * 2 * PI),
-                xp.asarray(OmegaTheta) / (Msec * 2 * PI),
-                xp.asarray(OmegaR) / (Msec * 2 * PI),
+                self.xp.asarray(OmegaPhi) / (Msec * 2 * PI),
+                self.xp.asarray(OmegaTheta) / (Msec * 2 * PI),
+                self.xp.asarray(OmegaR) / (Msec * 2 * PI),
             )
 
             # TODO: update when in kerr
             freqs = (
-                modeinds[1][xp.newaxis, :] * f_Phi[:, xp.newaxis]
-                + modeinds[2][xp.newaxis, :] * f_r[:, xp.newaxis]
+                modeinds[1][self.xp.newaxis, :] * f_Phi[:, self.xp.newaxis]
+                + modeinds[2][self.xp.newaxis, :] * f_r[:, self.xp.newaxis]
             )
 
             freqs_shape = freqs.shape
 
             # make all frequencies positive
-            freqs_in = xp.abs(freqs)
+            freqs_in = self.xp.abs(freqs)
             PSD = self.sensitivity_fn(freqs_in.flatten()).reshape(freqs_shape)
 
             # weight by PSD

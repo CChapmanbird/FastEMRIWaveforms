@@ -65,12 +65,11 @@ class CubicSplineInterpolant(ParallelModuleBase):
     This class can be run on GPUs and CPUs.
 
     args:
-        t (1D or 2D double xp.ndarray): t values as input for the spline. If 2D, must have shape (ninterps, length).
+        t (1D double xp.ndarray): t values as input for the spline.
         y_all (1D or 2D double xp.ndarray): y values for the spline.
             Shape: (length,) or (ninterps, length).
-        **kwargs (dict, optional): Keyword arguments for the base classes:
-            :class:`few.utils.baseclasses.ParallelModuleBase`.
-            Default is {}.
+        use_gpu (bool, optional): If True, prepare arrays for a GPU. Default is
+            False.
 
     """
 
@@ -240,11 +239,14 @@ class CubicSplineInterpolant(ParallelModuleBase):
 
         tnew = xp.atleast_1d(tnew)
 
-        if tnew.ndim == 2:
-            if tnew.shape[0] != self.t.shape[0]:
-                raise ValueError(
-                    "If providing a 2D tnew array, must have same number of interpolants as was entered during initialization."
-                )
+        # get values outside the edges
+        inds_bad_left = tnew < self.t[0]
+        inds_bad_right = tnew > self.t[-1]
+
+        if np.any(inds < 0) or np.any(inds >= len(self.t)):
+            warnings.warn(
+                "New t array outside bounds of input t array. These points are filled with edge values."
+            )
 
         # copy input to all splines
         elif tnew.ndim == 1:
@@ -256,6 +258,13 @@ class CubicSplineInterpolant(ParallelModuleBase):
             + self.c2[:, inds] * x2
             + self.c3[:, inds] * x3
         )
+
+        # fix bad values
+        if self.xp.any(inds_bad_left):
+            out[:, inds_bad_left] = self.y[:, 0]
+
+        if self.xp.any(inds_bad_right):
+            out[:, inds_bad_right] = self.y[:, -1]
         return out.squeeze()
 
         # get indices into spline

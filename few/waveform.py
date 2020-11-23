@@ -448,7 +448,9 @@ class SchwarzschildEccentricWaveformBase(
         self.ylm_gen = GetYlms(**Ylm_kwargs)
 
         # selecting modes that contribute at threshold to the waveform
-        self.mode_selector = ModeSelector(self.m0mask, **mode_selector_kwargs)
+        self.mode_selector = ModeSelector(
+            self.m0mask, **mode_selector_kwargs, use_gpu=use_gpu
+        )
 
     @property
     def citation(self):
@@ -683,13 +685,7 @@ class SchwarzschildEccentricWaveformBase(
 
             # mode selection based on input module
             else:
-                fund_freq_args = (
-                    M,
-                    0.0,
-                    p_temp,
-                    e_temp,
-                    xp.zeros_like(e_temp),
-                )
+                fund_freq_args = (M, 0.0, p_temp, e_temp, self.xp.zeros_like(e_temp))
                 modeinds = [self.l_arr, self.m_arr, self.n_arr]
                 (
                     teuk_modes_in,
@@ -698,11 +694,7 @@ class SchwarzschildEccentricWaveformBase(
                     self.ms,
                     self.ns,
                 ) = self.mode_selector(
-                    teuk_modes,
-                    ylms,
-                    modeinds,
-                    fund_freq_args=fund_freq_args,
-                    eps=eps,
+                    teuk_modes, ylms, modeinds, fund_freq_args=fund_freq_args, eps=eps
                 )
 
             # store number of modes for external information
