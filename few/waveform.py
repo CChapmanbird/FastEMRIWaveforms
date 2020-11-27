@@ -252,13 +252,102 @@ class GenerateEMRIWaveform:
 
         """
 
+class GenerateEMRIWaveform:
+    def __init__(
+        self, waveform_class, *args, frame="detector", return_list=False, **kwargs
+    ):
+
+        waveform = globals()[waveform_class]
+        self.waveform_generator = waveform(*args, **kwargs)
+
+        if frame == "source":
+            raise NotImplementedError
+
+        self.return_list = return_list
+
+        self.args_remove = []
+        if self.waveform_generator.descriptor == "eccentric":
+            self.args_remove.append(5)
+            self.args_remove.append(8)
+
+            self.phases_needed = {"Phi_phi0": 11, "Phi_r0": 13}
+
+        else:
+            self.phases_needed = {"Phi_phi0": 11, "Phi_theta0": 12, "Phi_r0": 13}
+
+        if self.waveform_generator.background == "Schwarzschild":
+            self.args_remove.append(2)
+
+        if self.waveform_generator.frame == "source":
+            for i in range(6, 11):
+                self.args_remove.append(i)
+
+        self.args_keep = np.delete(np.arange(11), self.args_remove)
+
+    def _transform_frames(self, qS, phiS, qK, phiK):
+        """Transform from the detector frame to the source frame"""
+
+        cqS = np.cos(qS)
+        sqS = np.sin(qS)
+
+        cphiS = np.cos(phiS)
+        sphiS = np.sin(phiS)
+
+        cqK = np.cos(qK)
+        sqK = np.sin(qK)
+
+        cphiK = np.cos(phiK)
+        sphiK = np.sin(phiK)
+
+        # rotation matrices based on spin angular momentum vector of MBH
+        rot1 = np.array([[1.0, 0.0, 0.0], [0.0, cqK, -sqK], [0.0, sqK, cqK]])
+        rot2 = np.array([[cphiK, -sphiK, 0.0], [sphiK, cphiK, 0.0], [0.0, 0.0, 1.0]])
+
+        # sky location in ssb frame
+        n_hat_detector_frame = np.array([sqS * cphiS, sqS * sphiS, cqS])
+
+        # transform
+        n_hat_source_frame = np.dot((rot1 + rot2), n_hat_detector_frame)
+
+        nx = n_hat_source_frame[0]
+        ny = n_hat_source_frame[1]
+        nz = n_hat_source_frame[2]
+
+        # get viewing angles
+        phi = np.arctan((nx ** 2 + ny ** 2 + nz ** 2) / (nx ** 2 + ny ** 2))
+        theta = np.arctan(ny / nx)
+
+        if theta < 0.0:
+            theta = np.pi + theta
+
+        return (theta, phi)
+
+    def __call__(
+        self,
+        M,
+        mu,
+        a,
+        p0,
+        e0,
+        Y0,
+        dist,
+        qS,
+        phiS,
+        qK,
+        phiK,
+        Phi_phi0,
+        Phi_theta0,
+        Phi_r0,
+        **kwargs
+    ):
+
         args_all = (
             M,
             mu,
             a,
             p0,
             e0,
-            x0,
+            Y0,
             dist,
             qS,
             phiS,
@@ -269,83 +358,35 @@ class GenerateEMRIWaveform:
             Phi_r0,
         )
 
-        # if Y is needed rather than x (inclination definition)
-        if (
-            hasattr(self.waveform_generator, "needs_Y")
-            and self.waveform_generator.background.lower() == "kerr"
-            and self.waveform_generator.needs_Y
-        ):
-            x0 = xI_to_Y(a, p0, e0, x0)
-
-        # remove the arguments that are not used in this waveform
         args = tuple([args_all[i] for i in self.args_keep])
 
-        # pick out the phases to be used
         initial_phases = {key: args_all[i] for key, i in self.phases_needed.items()}
 
-        # generate waveform in source frame
         if self.waveform_generator.frame == "source":
-            # distance factor
             dist_dimensionless = (dist * Gpc) / (mu * MRSUN_SI)
 
-            # get viewing angles in the source frame
-            (
-                theta_source,
-                phi_source,
-            ) = self._get_viewing_angles(qS, phiS, qK, phiK)
+            theta_source, phi_source = self._transform_frames(qS, phiS, qK, phiK)
 
             args += (theta_source, phi_source)
 
         else:
             dist_dimensionless = 1.0
 
-        # if output is to be in the source frame, need to properly scale with distance
-        if self.frame == "source":
-            if self.waveform_generator.frame == "detector":
-                dist_dimensionless = 1.0 / ((dist * Gpc) / (mu * MRSUN_SI))
-            else:
-                dist_dimensionless = 1.0
-
-        # add additional arguments to waveform interface
-        args += add_args
-
-        # get waveform
         h = (
             self.waveform_generator(*args, **{**initial_phases, **kwargs})
             / dist_dimensionless
         )
 
-        # by definition of the source frame, need to rotate by pi
-        if self.waveform_generator.frame == "source":
-            h *= -1
-
-        # transform to SSB frame if desired
-        if self.waveform_generator.create_waveform.output_type == "td":
-            if self.frame == "detector":
-                hp, hc = self._to_SSB_frame(h.real, -h.imag, qS, phiS, qK, phiK)
-            elif self.frame == "source":
-                hp, hc = h.real, -h.imag
-
-        # if FD, h is of length 2 rather than h+ - ihx
-        if self.waveform_generator.create_waveform.output_type == "fd":
-            if self.frame == "detector":
-                hp, hc = self._to_SSB_frame(h[0], h[1], qS, phiS, qK, phiK)
-            elif self.frame == "source":
-                hp, hc = h[0], h[1]
-
         if self.return_list is False:
-            return hp - 1j * hc
+            return h
+
         else:
-            return [hp, hc]
+            hp = h.real
+            hx = -h.imag
+            return [hp, hx]
 
 
-# get path to this file
-dir_path = os.path.dirname(os.path.realpath(__file__))
-
-
-class SchwarzschildEccentricWaveformBase(
-    SchwarzschildEccentric, ParallelModuleBase, ABC
-):
+class SchwarzschildEccentricWaveformBase(SchwarzschildEccentric, ABC):
     """Base class for the actual Schwarzschild eccentric waveforms.
 
     This class carries information and methods that are common to any
@@ -465,7 +506,9 @@ class SchwarzschildEccentricWaveformBase(
         e0,
         theta,
         phi,
-        dist,
+        dist=None,
+        Phi_phi0=0.0,
+        Phi_r0=0.0,
         dt=10.0,
         T=1.0,
         eps=1e-5,
@@ -489,7 +532,12 @@ class SchwarzschildEccentricWaveformBase(
             e0 (double): Initial eccentricity (:math:`0.0\leq e_0\leq0.7`).
             theta (double): Polar viewing angle (:math:`-\pi/2\leq\Theta\leq\pi/2`).
             phi (double): Azimuthal viewing angle.
-            dist (double): Luminosity distance in Gpc.
+            dist (double, optional): Luminosity distance in Gpc. Default is None. If None,
+                will return source frame.
+            Phi_phi0 (double, optional): Initial phase for :math:`\Phi_\phi`.
+                Default is 0.0.
+            Phi_r0 (double, optional): Initial phase for :math:`\Phi_r`.
+                Default is 0.0.
             dt (double, optional): Time between samples in seconds (inverse of
                 sampling frequency). Default is 10.0.
             T (double, optional): Total observation time in years.
@@ -534,20 +582,16 @@ class SchwarzschildEccentricWaveformBase(
         self.sanity_check_init(M, mu, p0, e0)
 
         # get trajectory
-        (t, p, e, x, Phi_phi, Phi_theta, Phi_r) = self.inspiral_generator(
+        (t, p, e, Phi_phi, Phi_r, amp_norm) = self.inspiral_generator(
             M,
             mu,
-            0.0,
             p0,
             e0,
-            1.0,
-            *args,
             Phi_phi0=Phi_phi0,
-            Phi_theta0=0.0,
             Phi_r0=Phi_r0,
             T=T,
             dt=dt,
-            **self.inspiral_kwargs,
+            **self.inspiral_kwargs
         )
 
         # makes sure p and e are generally within the model
@@ -721,7 +765,12 @@ class SchwarzschildEccentricWaveformBase(
             else:
                 waveform = waveform_temp
 
-        dist_dimensionless = (dist * Gpc) / (mu * MRSUN_SI)
+        if dist is not None:
+            dist_dimensionless = (dist * Gpc) / (mu * MRSUN_SI)
+
+        else:
+            dist_dimensionless = 1.0
+
         return waveform / dist_dimensionless
 
 
@@ -1366,6 +1415,10 @@ class Pn5AAKWaveform(Pn5AAK, ABC):
         return True
 
     @property
+    def is_source_frame(self):
+        return False
+
+    @property
     def allow_batching(self):
         return False
 
@@ -1377,11 +1430,11 @@ class Pn5AAKWaveform(Pn5AAK, ABC):
         p0,
         e0,
         Y0,
+        dist,
         qS,
         phiS,
         qK,
         phiK,
-        dist,
         Phi_phi0=0.0,
         Phi_theta0=0.0,
         Phi_r0=0.0,
@@ -1402,6 +1455,7 @@ class Pn5AAKWaveform(Pn5AAK, ABC):
             e0 (double): Initial eccentricity.
             Y0 (double): Initial cosine of the inclination angle
                 (:math:`\cos{\iota}`).
+            dist (double): Luminosity distance in Gpc.
             qS (double): Sky location polar angle in ecliptic
                 coordinates.
             phiS (double): Sky location azimuthal angle in
@@ -1410,7 +1464,6 @@ class Pn5AAKWaveform(Pn5AAK, ABC):
                 coordinates.
             phiK (double): Initial BH spin azimuthal angle in
                 ecliptic coordinates.
-            dist (double): Luminosity distance in Gpc.
             Phi_phi0 (double, optional): Initial phase for :math:`\Phi_\phi`.
                 Default is 0.0.
             Phi_theta0 (double, optional): Initial phase for :math:`\Phi_\Theta`.

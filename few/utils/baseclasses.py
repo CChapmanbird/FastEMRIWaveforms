@@ -475,7 +475,8 @@ class Pn5AAK(WaveformBase, ABC):
 
         # some descriptive information
         self.background = "Kerr"
-        self.descriptor = "Generic Orbits"
+        self.descriptor = "generic orbits"
+        self.frame = "detector"
 
     @property
     def citation(self):
