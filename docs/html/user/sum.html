@@ -208,12 +208,11 @@ in cuda for an example of this.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<em>1D</em><em> or </em><em>2D double xp.ndarray</em>) – t values as input for the spline. If 2D, must have shape (ninterps, length).</p></li>
+<li><p><strong>t</strong> (<em>1D double xp.ndarray</em>) – t values as input for the spline.</p></li>
 <li><p><strong>y_all</strong> (<em>1D</em><em> or </em><em>2D double xp.ndarray</em>) – y values for the spline.
 Shape: (length,) or (ninterps, length).</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments for the base classes:
-<a class="reference internal" href="main.html#few.utils.baseclasses.ParallelModuleBase" title="few.utils.baseclasses.ParallelModuleBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">few.utils.baseclasses.ParallelModuleBase</span></code></a>.
-Default is {}.</p></li>
+<li><p><strong>use_gpu</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prepare arrays for a GPU. Default is
+False.</p></li>
 </ul>
 </dd>
 </dl>

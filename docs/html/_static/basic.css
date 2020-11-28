@@ -844,7 +844,6 @@ div.code-block-caption code {
 }
 
 table.highlighttable td.linenos,
-span.linenos,
 div.doctest > div.highlight span.gp {  /* gp: Generic.Prompt */
     user-select: none;
 }

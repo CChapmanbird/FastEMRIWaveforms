@@ -346,7 +346,7 @@ documentation, change to the <code class="docutils literal notranslate"><span cl
 <p>We use <a class="reference external" href="http://semver.org/">SemVer</a> for versioning. For the versions
 available, see the <a class="reference external" href="https://github.com/BlackHolePerturbationToolkit/FastEMRIWaveforms/tags">tags on this
 repository</a>.</p>
-<p>Current Version: 1.1.5</p>
+<p>Current Version: 1.2.0</p>
 </div>
 <div class="section" id="authors">
 <h2>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h2>
@@ -580,6 +580,8 @@ computing facility at Northwestern University.</p></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html">Fast and Accurate EMRI Waveforms Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Full-EMRI-Waveforms-in-Schwarzschild-Eccentric">Full EMRI Waveforms in Schwarzschild Eccentric</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#FastSchwarzschildEccentricFlux">FastSchwarzschildEccentricFlux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Waveform-scaled-by-distance-(generated-in-source-frame)">Waveform scaled by distance (generated in source frame)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Producing-waveforms-with-the-generic-interface">Producing waveforms with the generic interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#SlowSchwarzschildEccentricFlux">SlowSchwarzschildEccentricFlux</a></li>
 </ul>
 </li>
@@ -597,7 +599,13 @@ computing facility at Northwestern University.</p></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Spin-weighted-spherical-harmonics">Spin-weighted spherical harmonics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Mode-Selection">Mode Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Mode-Selection">Mode Selection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Mode-selection-by-power-contribution">Mode selection by power contribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Mode-selection-by-noise-weighted-power-contribution">Mode selection by noise-weighted power contribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Compare-the-two-waves-with-and-without-noise-weighting">Compare the two waves with and without noise-weighting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Specific-mode-selection">Specific mode selection</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Parallelized-Cubic-Spline-Interpolation">Parallelized Cubic Spline Interpolation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Mode-Summation">Mode Summation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Interpolated-summation">Interpolated summation</a></li>
@@ -608,6 +616,7 @@ computing facility at Northwestern University.</p></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Fundamental-Frequencies">Fundamental Frequencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Separatrix-in-Generic-Kerr">Separatrix in Generic Kerr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Get-\mu-based-on-desired-duration-of-waveform">Get <span class="math notranslate nohighlight">\(\mu\)</span> based on desired duration of waveform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Get-p_0-based-on-desired-duration-of-waveform">Get <span class="math notranslate nohighlight">\(p_0\)</span> based on desired duration of waveform</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Creating-modules">Creating modules</a><ul>
@@ -620,6 +629,7 @@ computing facility at Northwestern University.</p></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Augmented-Analytic-Kludge-with-5PN-trajectory">Augmented Analytic Kludge with 5PN trajectory</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#5PN-Trajectory">5PN Trajectory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Building-an-AAK-waveform-from-a-given-trajectory-(in-this-case-the-5PN-trajectory)">Building an AAK waveform from a given trajectory (in this case the 5PN trajectory)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Generating-the-new-AAK-with-the-generic-waveform-generator">Generating the new AAK with the generic waveform generator</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial/FastEMRIWaveforms_tutorial.html#Citing-waveforms-and-modules">Citing waveforms and modules</a><ul>

@@ -557,7 +557,7 @@ inspiral generator.</p>
 
 <dl class="py method">
 <dt id="few.trajectory.flux.RunSchwarzEccFluxInspiral.get_inspiral">
-<code class="sig-name descname">get_inspiral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">p0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.trajectory.flux.RunSchwarzEccFluxInspiral.get_inspiral" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_inspiral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">M</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">p0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">Phi_phi0</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">Phi_r0</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.trajectory.flux.RunSchwarzEccFluxInspiral.get_inspiral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the inspiral.</p>
 <p>This is the function for calling the creation of the flux-based
 trajectory. Inputs define the output time spacing. This class can be
@@ -568,46 +568,18 @@ for information on a more flexible interface to the trajectory modules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>*args</strong> (<em>list</em>) – Input of variable number of arguments specific to the
-inspiral model (see the trajectory class’ <cite>get_inspiral</cite> method).
-<strong>Important Note</strong>: M must be the first parameter of any model
-that uses this base class.</p></li>
-<li><p><strong>in_coordinate_time</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the trajectory will be
-outputted in coordinate time. If False, the trajectory will be
-outputted in units of M. Default is True.</p></li>
-<li><p><strong>dt</strong> (<em>double</em><em>, </em><em>optional</em>) – Time step for output waveform in seconds. Also sets
-initial step for integrator. Default is 10.0.</p></li>
-<li><p><strong>T</strong> (<em>double</em><em>, </em><em>optional</em>) – Total observation time in years. Sets the maximum time
-for the integrator to run. Default is 1.0.</p></li>
-<li><p><strong>new_t</strong> (<em>1D np.ndarray</em><em>, </em><em>optional</em>) – If given, this represents the final
-time array at which the trajectory is analyzed. This is
-performed by using a cubic spline on the integrator output.
-Default is None.</p></li>
-<li><p><strong>spline_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – If using upsampling, spline_kwargs
-provides the kwargs desired for scipy.interpolate.CubicSpline.
-Default is {}.</p></li>
-<li><p><strong>DENSE_STEPPING</strong> (<em>int</em><em>, </em><em>optional</em>) – If 1, the trajectory used in the
-integrator will be densely stepped at steps of <code class="xref py py-obj docutils literal notranslate"><span class="pre">dt</span></code>. If 0,
-the integrator will determine its stepping. Default is 0.</p></li>
-<li><p><strong>max_init_len</strong> (<em>int</em><em>, </em><em>optional</em>) – Sets the allocation of memory for
-trajectory parameters. This should be the maximum length
-expected for a trajectory. Trajectories with default settings
-will be ~100 points. Default is 1000.</p></li>
-<li><p><strong>upsample</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, upsample, with a cubic spline,
-the trajectories from 0 to T in steps of dt. Default is False.</p></li>
-<li><p><strong>err</strong> (<em>double</em><em>, </em><em>optional</em>) – Tolerance for integrator. Default is 1e-10.
-Decreasing this parameter will give more steps over the
-trajectory, but if it is too small, memory issues will occur as
-the trajectory length will blow up. We recommend not adjusting
-this parameter.</p></li>
-<li><p><strong>fix_T</strong> (<em>bool</em><em>, </em><em>optional</em>) – If upsampling, this will affect excess
-points in the t array. If True, it will shave any excess on the
-trajectories arrays where the time is greater than the overall
-time of the trajectory requested.</p></li>
-<li><p><strong>use_rk4</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use rk4 integrator from gsl.
-If False, use rk8. Default is False (rk8).</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs passed to trajectory module.
-Default is {}.</p></li>
+<li><p><strong>M</strong> (<em>double</em>) – Mass of massive black hole in solar masses.</p></li>
+<li><p><strong>mu</strong> (<em>double</em>) – Mass of compact object in solar masses.</p></li>
+<li><p><strong>p0</strong> (<em>double</em>) – Initial semi-latus rectum in terms units of M (p/M).
+This model can handle (p0 &lt;= 18.0).</p></li>
+<li><p><strong>e0</strong> (<em>double</em>) – Initial eccentricity (dimensionless).
+This model can handle (e0 &lt;= 0.7).</p></li>
+<li><p><strong>Phi_phi0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_\phi\)</span>.
+Default is 0.0.</p></li>
+<li><p><strong>Phi_r0</strong> (<em>double</em><em>, </em><em>optional</em>) – Initial phase for <span class="math notranslate nohighlight">\(\Phi_r\)</span>.
+Default is 0.0.</p></li>
+<li><p><strong>*args</strong> (<em>list</em><em>, </em><em>placeholder</em>) – Added for flexibility.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – kwargs passed from parent.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
