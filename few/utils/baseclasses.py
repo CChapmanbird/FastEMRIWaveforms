@@ -49,8 +49,8 @@ from few.utils.constants import *
 from few.utils.citations import *
 
 
-class WaveformBase(ABC):
-    """Base class for waveforms.
+class GPUModuleBase(ABC):
+    """Base class for modules that can use GPUs.
 
     This class mainly handles setting GPU usage.
 
@@ -59,7 +59,7 @@ class WaveformBase(ABC):
 
     """
 
-    def attributes_WaveformBase(self):
+    def attributes_GPUModuleBase(self):
         """
         attributes:
             use_gpu (bool): If True, use GPU.
@@ -68,7 +68,7 @@ class WaveformBase(ABC):
         """
         pass
 
-    def __init__(self, use_gpu=False, **kwargs):
+    def __init__(self, *args, use_gpu=False, **kwargs):
 
         self.use_gpu = use_gpu
 
@@ -84,12 +84,6 @@ class WaveformBase(ABC):
     @property
     def gpu_capability(self):
         """Indicator if the module has gpu capability"""
-        raise NotImplementedError
-
-    @classmethod
-    @property
-    def allow_batching(self):
-        """Indicator if module allows batching"""
         raise NotImplementedError
 
     @property
@@ -148,7 +142,7 @@ class WaveformBase(ABC):
         return kwargs
 
 
-class SchwarzschildEccentric(WaveformBase, ABC):
+class SchwarzschildEccentric(GPUModuleBase, ABC):
     """Base class for Schwarzschild eccentric waveforms.
 
     This class creates shared traits between different implementations of the
@@ -216,10 +210,8 @@ class SchwarzschildEccentric(WaveformBase, ABC):
         pass
 
     def __init__(self, *args, use_gpu=False, **kwargs):
-        ParallelModuleBase.__init__(self, *args, use_gpu=use_gpu, **kwargs)
 
-        WaveformBase.__init__(self, use_gpu=use_gpu, **kwargs)
-
+        GPUModuleBase.__init__(self, *args, **kwargs)
         # some descriptive information
         self.background = "Schwarzschild"
         self.descriptor = "eccentric"
@@ -446,7 +438,7 @@ class SchwarzschildEccentric(WaveformBase, ABC):
             )
 
 
-class Pn5AAK(WaveformBase, ABC):
+class Pn5AAK(ABC):
     """Base class for Pn5AAK waveforms.
 
     This class contains some basic checks and information for AAK waveforms
@@ -470,8 +462,6 @@ class Pn5AAK(WaveformBase, ABC):
         pass
 
     def __init__(self, use_gpu=False, **kwargs):
-
-        WaveformBase.__init__(self, use_gpu=use_gpu, **kwargs)
 
         # some descriptive information
         self.background = "Kerr"

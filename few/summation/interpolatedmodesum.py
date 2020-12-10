@@ -31,11 +31,7 @@ from pyinterp_cpu import interpolate_arrays_wrap as interpolate_arrays_wrap_cpu
 from pyinterp_cpu import get_waveform_wrap as get_waveform_wrap_cpu
 
 # Python imports
-from few.utils.baseclasses import (
-    SummationBase,
-    SchwarzschildEccentric,
-    ParallelModuleBase,
-)
+from few.utils.baseclasses import SummationBase, SchwarzschildEccentric, GPUModuleBase
 from few.utils.citations import *
 from few.utils.utility import get_fundamental_frequencies
 from few.utils.constants import *
@@ -48,7 +44,7 @@ except (ImportError, ModuleNotFoundError) as e:
     pass
 
 
-class CubicSplineInterpolant(ParallelModuleBase):
+class CubicSplineInterpolant(GPUModuleBase):
     """GPU-accelerated Multiple Cubic Splines
 
     This class produces multiple cubic splines on a GPU. It has a CPU option
@@ -76,7 +72,9 @@ class CubicSplineInterpolant(ParallelModuleBase):
     def __init__(self, t, y_all, **kwargs):
         ParallelModuleBase.__init__(self, **kwargs)
 
-        if self.use_gpu:
+        GPUModuleBase.__init__(self, use_gpu=use_gpu)
+
+        if use_gpu:
             self.interpolate_arrays = interpolate_arrays_wrap
 
         else:
@@ -326,7 +324,7 @@ class CubicSplineInterpolant(ParallelModuleBase):
         return out.squeeze()
 
 
-class InterpolatedModeSum(SummationBase, SchwarzschildEccentric, ParallelModuleBase):
+class InterpolatedModeSum(SummationBase, SchwarzschildEccentric, GPUModuleBase):
     """Create waveform by interpolating sparse trajectory.
 
     It interpolates all of the modes of interest and phases at sparse
@@ -338,7 +336,8 @@ class InterpolatedModeSum(SummationBase, SchwarzschildEccentric, ParallelModuleB
     """
 
     def __init__(self, *args, **kwargs):
-        ParallelModuleBase.__init__(self, *args, **kwargs)
+
+        GPUModuleBase.__init__(self, *args, **kwargs)
         SchwarzschildEccentric.__init__(self, *args, **kwargs)
         SummationBase.__init__(self, *args, **kwargs)
 
