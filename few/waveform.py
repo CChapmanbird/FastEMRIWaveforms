@@ -42,8 +42,7 @@ from few.summation.directmodesum import DirectModeSum
 from few.summation.aakwave import AAKSummation
 from few.utils.constants import *
 from few.utils.citations import *
-from few.summation.interpolatedmodesum import InterpolatedModeSum
-from few.summation.fdinterp import FDInterpolatedModeSum
+from few.summation.interpolatedmodesum import InterpolatedModeSum, TFInterpolatedModeSum
 
 
 class GenerateEMRIWaveform:
@@ -179,6 +178,12 @@ class GenerateEMRIWaveform:
 
         theta = np.arccos(nz / 1.0)  # normalized vector
 
+        # to test Alvin's suggestion
+        R = np.array([sqS * cphiS, sqS * sphiS, cqS])
+        S = np.array([sqK * cphiK, sqK * sphiK, cqK])
+
+        phi = 0.0
+        theta = np.arccos(-np.dot(R, S))
         return (theta, phi)
 
     def __call__(
@@ -276,6 +281,9 @@ class GenerateEMRIWaveform:
             self.waveform_generator(*args, **{**initial_phases, **kwargs})
             / dist_dimensionless
         )
+
+        if self.frame == "source":
+            h *= -1
 
         if self.return_list is False:
             return h
@@ -416,8 +424,7 @@ class SchwarzschildEccentricWaveformBase(SchwarzschildEccentric, GPUModuleBase, 
         show_progress=False,
         batch_size=-1,
         mode_selection=None,
-        include_minus_m=True,
-        **kwargs,
+        t_window=None,
     ):
         """Call function for SchwarzschildEccentric models.
 
@@ -654,8 +661,12 @@ class SchwarzschildEccentricWaveformBase(SchwarzschildEccentric, GPUModuleBase, 
                 Phi_r_temp,
                 self.ms,
                 self.ns,
+                M,
+                p,
+                e,
                 dt=dt,
                 T=T,
+                t_window=t_window,
             )
 
             # if batching, need to add the waveform
@@ -732,6 +743,15 @@ class FastSchwarzschildEccentricFlux(SchwarzschildEccentricWaveformBase):
             if sum_kwargs["output_type"] == "fd":
                 mode_summation_module = FDInterpolatedModeSum
 
+            else:
+                mode_summation_module = InterpolatedModeSum
+
+        else:
+            mode_summation_module = InterpolatedModeSum
+
+        if "output_type" in sum_kwargs:
+            if sum_kwargs["output_type"] == "tf":
+                mode_summation_module = TFInterpolatedModeSum
             else:
                 mode_summation_module = InterpolatedModeSum
 
