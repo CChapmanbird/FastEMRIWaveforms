@@ -136,7 +136,7 @@
 <dl class="py class">
 <dt id="few.utils.modeselector.ModeSelector">
 <em class="property">class </em><code class="sig-prename descclassname">few.utils.modeselector.</code><code class="sig-name descname">ModeSelector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m0mask</span></em>, <em class="sig-param"><span class="n">sensitivity_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_gpu</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">few.utils.baseclasses.GPUModuleBase</span></code></p>
 <p>Filter teukolsky amplitudes based on power contribution.</p>
 <p>This module takes teukolsky modes, combines them with their associated ylms,
 and determines the power contribution from each mode. It then filters the
@@ -172,8 +172,14 @@ Default is False.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.utils.modeselector.ModeSelector.attributes_ModeSelector">
-<span class="sig-name descname"><span class="pre">attributes_ModeSelector</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.attributes_ModeSelector" title="Permalink to this definition"></a></dt>
+<dt id="few.utils.modeselector.ModeSelector.gpu_capability">
+<em class="property">property </em><code class="sig-name descname">gpu_capability</code><a class="headerlink" href="#few.utils.modeselector.ModeSelector.gpu_capability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Confirms GPU capability</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="few.utils.modeselector.ModeSelector.attributes_ModeSelector">
+<code class="sig-name descname">attributes_ModeSelector</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.attributes_ModeSelector" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="few.utils.modeselector.ModeSelector.xp">
 <span class="sig-name descname"><span class="pre">xp</span></span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.xp" title="Permalink to this definition"></a></dt>
@@ -271,13 +277,13 @@ acceptable loss). Default that gives good mismatch qualities is
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.utils.modeselector.ModeSelector.adjust_gpu_usage">
-<span class="sig-name descname"><span class="pre">adjust_gpu_usage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.adjust_gpu_usage" title="Permalink to this definition"></a></dt>
+<dt id="few.utils.modeselector.ModeSelector.adjust_gpu_usage">
+<code class="sig-name descname">adjust_gpu_usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_gpu</span></em>, <em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.adjust_gpu_usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adjust all inputs for gpu usage</p>
 <p>If user wants to use gpu, it will change all <code class="code docutils literal notranslate"><span class="pre">kwargs</span></code> in
 so that <code class="code docutils literal notranslate"><span class="pre">use_gpu=True</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>use_gpu</strong> (<em>bool</em>) – If True, use gpu resources.</p></li>
 <li><p><strong>kwargs</strong> (<em>list of dicts</em><em> or </em><em>dict</em>) – List of kwargs dictionaries or
@@ -286,6 +292,52 @@ waveform generator.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="few.utils.modeselector.ModeSelector.attributes_GPUModuleBase">
+<code class="sig-name descname">attributes_GPUModuleBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.attributes_GPUModuleBase" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt id="few.utils.modeselector.ModeSelector.use_gpu">
+<code class="sig-name descname">use_gpu</code><a class="headerlink" href="#few.utils.modeselector.ModeSelector.use_gpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, use GPU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id0">
+<code class="sig-name descname">xp</code><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either numpy or CuPy based on gpu preference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt id="few.utils.modeselector.ModeSelector.sanity_check_gpu">
+<code class="sig-name descname">sanity_check_gpu</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_gpu</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.modeselector.ModeSelector.sanity_check_gpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this class has GPU capability</p>
+<p>If the user is requesting GPU usage, this will confirm the class has
+GPU capabilites.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_gpu</strong> (<em>bool</em>) – If True, the user is requesting GPU usage.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – The user is requesting GPU usage, but this class does
+    not have that capability.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py method">
@@ -338,9 +390,9 @@ GPU capabilites.</p>
 <section id="module-few.utils.ylm">
 <span id="spin-weighted-spherical-harmonics"></span><h2>(-2) Spin-Weighted Spherical Harmonics<a class="headerlink" href="#module-few.utils.ylm" title="Permalink to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="few.utils.ylm.GetYlms">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">few.utils.ylm.</span></span><span class="sig-name descname"><span class="pre">GetYlms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">assume_positive_m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="main.html#few.utils.baseclasses.ParallelModuleBase" title="few.utils.baseclasses.ParallelModuleBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParallelModuleBase</span></code></a></p>
+<dt id="few.utils.ylm.GetYlms">
+<em class="property">class </em><code class="sig-prename descclassname">few.utils.ylm.</code><code class="sig-name descname">GetYlms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">assume_positive_m</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">use_gpu</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">few.utils.baseclasses.GPUModuleBase</span></code></p>
 <p>(-2) Spin-weighted Spherical Harmonics</p>
 <p>The class generates (-2) spin-weighted spherical hackarmonics,
 <span class="math notranslate nohighlight">\(Y_{lm}(\Theta,\phi)\)</span>. <strong>Important Note</strong>: this class also applies
@@ -365,8 +417,14 @@ Default is {}.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.utils.ylm.GetYlms.attributes_GetYlms">
-<span class="sig-name descname"><span class="pre">attributes_GetYlms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.attributes_GetYlms" title="Permalink to this definition"></a></dt>
+<dt id="few.utils.ylm.GetYlms.gpu_capability">
+<em class="property">property </em><code class="sig-name descname">gpu_capability</code><a class="headerlink" href="#few.utils.ylm.GetYlms.gpu_capability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Confirms GPU capability</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="few.utils.ylm.GetYlms.attributes_GetYlms">
+<code class="sig-name descname">attributes_GetYlms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.attributes_GetYlms" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="few.utils.ylm.GetYlms.xp">
 <span class="sig-name descname"><span class="pre">xp</span></span><a class="headerlink" href="#few.utils.ylm.GetYlms.xp" title="Permalink to this definition"></a></dt>
@@ -405,13 +463,13 @@ angles.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.utils.ylm.GetYlms.adjust_gpu_usage">
-<span class="sig-name descname"><span class="pre">adjust_gpu_usage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.adjust_gpu_usage" title="Permalink to this definition"></a></dt>
+<dt id="few.utils.ylm.GetYlms.adjust_gpu_usage">
+<code class="sig-name descname">adjust_gpu_usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_gpu</span></em>, <em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.adjust_gpu_usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adjust all inputs for gpu usage</p>
 <p>If user wants to use gpu, it will change all <code class="code docutils literal notranslate"><span class="pre">kwargs</span></code> in
 so that <code class="code docutils literal notranslate"><span class="pre">use_gpu=True</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>use_gpu</strong> (<em>bool</em>) – If True, use gpu resources.</p></li>
 <li><p><strong>kwargs</strong> (<em>list of dicts</em><em> or </em><em>dict</em>) – List of kwargs dictionaries or
@@ -423,17 +481,55 @@ waveform generator.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="few.utils.ylm.GetYlms.attributes_ParallelModuleBase">
-<span class="sig-name descname"><span class="pre">attributes_ParallelModuleBase</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.attributes_ParallelModuleBase" title="Permalink to this definition"></a></dt>
+<dt id="few.utils.ylm.GetYlms.attributes_GPUModuleBase">
+<code class="sig-name descname">attributes_GPUModuleBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.attributes_GPUModuleBase" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py attribute">
-<dt class="sig sig-object py" id="few.utils.ylm.GetYlms.use_gpu">
-<span class="sig-name descname"><span class="pre">use_gpu</span></span><a class="headerlink" href="#few.utils.ylm.GetYlms.use_gpu" title="Permalink to this definition"></a></dt>
+<dt id="few.utils.ylm.GetYlms.use_gpu">
+<code class="sig-name descname">use_gpu</code><a class="headerlink" href="#few.utils.ylm.GetYlms.use_gpu" title="Permalink to this definition">¶</a></dt>
 <dd><p>If True, use GPU.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="id1">
+<code class="sig-name descname">xp</code><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either numpy or CuPy based on gpu preference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt id="few.utils.ylm.GetYlms.citation">
+<em class="property">property </em><code class="sig-name descname">citation</code><a class="headerlink" href="#few.utils.ylm.GetYlms.citation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return citations related to this module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="few.utils.ylm.GetYlms.sanity_check_gpu">
+<code class="sig-name descname">sanity_check_gpu</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_gpu</span></em><span class="sig-paren">)</span><a class="headerlink" href="#few.utils.ylm.GetYlms.sanity_check_gpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if this class has GPU capability</p>
+<p>If the user is requesting GPU usage, this will confirm the class has
+GPU capabilites.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_gpu</strong> (<em>bool</em>) – If True, the user is requesting GPU usage.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – The user is requesting GPU usage, but this class does
+    not have that capability.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py attribute">
@@ -767,7 +863,7 @@ in order to get the desired mu value.</p>
 <li><p><strong>traj_module</strong> (<em>obj</em>) – Instantiated trajectory module. It must output
 the time array of the trajectory sparse trajectory as the first
 output value in the tuple.</p></li>
-<li><p><strong>t_out</strong> (<em>double</em>) – The desired length of time for the waveform.</p></li>
+<li><p><strong>t_out</strong> (<em>double</em>) – The desired length of time for the waveform in years.</p></li>
 <li><p><strong>traj_args</strong> (<em>list</em>) – List of arguments for the trajectory function.
 mu is removed. <strong>Note</strong>: It must be a list, not a tuple because the
 new mu values are inserted into the argument list.</p></li>
