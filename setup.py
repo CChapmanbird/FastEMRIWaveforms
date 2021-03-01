@@ -251,8 +251,7 @@ if run_cuda_install:
                 "-gencode=arch=compute_60,code=sm_60",
                 "-gencode=arch=compute_61,code=sm_61",
                 "-gencode=arch=compute_70,code=sm_70",
-                "-gencode=arch=compute_75,code=sm_75",
-                "-gencode=arch=compute_80,code=sm_80",
+                #'-gencode=arch=compute_75,code=sm_75',
                 "-std=c++11",
                 "--default-stream=per-thread",
                 "--ptxas-options=-v",
@@ -295,7 +294,7 @@ if run_cuda_install:
 
 # build all cpu modules
 cpu_extension = dict(
-    libraries=["gsl", "gslcblas", "lapack", "lapacke", "hdf5", "hdf5_hl"],
+    libraries=["gsl", "gslcblas", "lapack", "lapacke", "gomp", "hdf5", "hdf5_hl"],
     language="c++",
     runtime_library_dirs=[],
     extra_compile_args={"gcc": ["-std=c++11", "-fopenmp", "-fPIC"]},  # '-g'
