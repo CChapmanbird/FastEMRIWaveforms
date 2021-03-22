@@ -41,6 +41,7 @@ conda activate few_env
 ```
 import few
 ```
+
 See [examples notebook](https://github.com/BlackHolePerturbationToolkit/FastEMRIWaveforms/blob/master/examples/FastEMRIWaveforms_tutorial.ipynb).
 
 
