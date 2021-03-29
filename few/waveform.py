@@ -209,7 +209,7 @@ class GenerateEMRIWaveform:
         a,
         p0,
         e0,
-        Y0,
+        xI0,
         dist,
         qS,
         phiS,
@@ -227,11 +227,13 @@ class GenerateEMRIWaveform:
             mu (double): Mass of compact object in solar masses.
             a (double): Dimensionless spin of massive black hole.
             p0 (double): Initial semilatus rectum (Must be greater than
-                the separatrix at the the given e0 and Y0).
+                the separatrix at the the given e0 and xI0).
                 See documentation for more information on :math:`p_0<10`.
             e0 (double): Initial eccentricity.
-            Y0 (double): Initial cosine of the inclination angle
-                (:math:`\cos{\iota}`).
+            xI0 (double): Initial cosine of the inclination angle.
+                (:math:`x_I=\cos{I}`). This differs from :math:`Y=\cos{\iota}\equiv L_z/\sqrt{L_z^2 + Q}`
+                used in the semi-relativistic formulation. When running kludge waveforms,
+                :math:`x_{I,0}` will be converted to :math:`Y_0`.
             dist (double): Luminosity distance in Gpc.
             qS (double): Sky location polar angle in ecliptic
                 coordinates.
@@ -258,7 +260,7 @@ class GenerateEMRIWaveform:
             a,
             p0,
             e0,
-            Y0,
+            xI0,
             dist,
             qS,
             phiS,
@@ -1388,7 +1390,7 @@ class Pn5AAKWaveform(Pn5AAK, GPUModuleBase, ABC):
         a,
         p0,
         e0,
-        Y0,
+        xI0,
         dist,
         qS,
         phiS,
@@ -1410,11 +1412,13 @@ class Pn5AAKWaveform(Pn5AAK, GPUModuleBase, ABC):
             mu (double): Mass of compact object in solar masses.
             a (double): Dimensionless spin of massive black hole.
             p0 (double): Initial semilatus rectum (Must be greater than
-                the separatrix at the the given e0 and Y0).
-                See documentation for more information on :math:`p_0<10`.
+                the separatrix at the the given e0 and xI0).
+                See documentation for more information.
             e0 (double): Initial eccentricity.
-            Y0 (double): Initial cosine of the inclination angle
-                (:math:`\cos{\iota}`).
+            xI0 (double): Initial cosine of the inclination angle.
+                (:math:`x_I=\cos{I}`). This differs from :math:`Y=\cos{\iota}\equiv L_z/\sqrt{L_z^2 + Q}`
+                used in the semi-relativistic formulation. When running kludge waveforms,
+                :math:`x_{I,0}` will be converted to :math:`Y_0`.
             dist (double): Luminosity distance in Gpc.
             qS (double): Sky location polar angle in ecliptic
                 coordinates.
@@ -1449,7 +1453,11 @@ class Pn5AAKWaveform(Pn5AAK, GPUModuleBase, ABC):
 
         # makes sure angular extrinsic parameters are allowable
         qS, phiS, qK, phiK = self.sanity_check_angles(qS, phiS, qK, phiK)
-        self.sanity_check_init(M, mu, a, p0, e0, Y0)
+
+        self.sanity_check_init(M, mu, a, p0, e0, xI0)
+
+        # TODO: convert xI0 to Y0
+        Y0 = xI0
 
         # get trajectory
         t, p, e, Y, Phi_phi, Phi_theta, Phi_r = self.inspiral_generator(

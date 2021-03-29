@@ -629,7 +629,10 @@ void make_waveform(cmplx *waveform,
         fod phase = m * Phi_phi_i + n * Phi_r_i;
         partial_mode = mode_val * gcmplx::exp(minus_I * phase);
 
-        trans_plus_m = partial_mode * Ylm_plus_m;
+                // minus m if m > 0
+                // TODO: add flag that turns this on or off
+                if (m != 0)
+                {
 
         // minus m if m > 0
         // mode values for +/- m are taking care of when applying
