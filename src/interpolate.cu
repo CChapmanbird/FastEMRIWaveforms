@@ -630,7 +630,8 @@ void make_waveform(cmplx *waveform,
         partial_mode = mode_val * gcmplx::exp(minus_I * phase);
 
                 // minus m if m > 0
-                // TODO: add flag that turns this on or off
+                // mode values for +/- m are taking care of when applying
+                //specific mode selection by setting ylms to zero for the opposites
                 if (m != 0)
                 {
 
