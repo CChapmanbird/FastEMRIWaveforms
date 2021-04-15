@@ -188,7 +188,7 @@ More Customized Installation (legacy)
 
    pip install cupy-cuda92
 
-4) Run install.
+4) Run install. Make sure CUDA is on your PATH.
 
 ::
 
@@ -288,7 +288,7 @@ Authors/Developers
 -  Christian Chapman-Bird
 -  Alvin J. K. Chua
 -  Niels Warburton
--  Scott Hughes
+-  Lorenzo Speri
 
 Contibutors
 ~~~~~~~~~~~
