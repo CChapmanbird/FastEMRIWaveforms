@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FastEMRIWaveforms Publications &mdash; few: Fast EMRI Waveforms 0.1.0 documentation</title>
+  
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FastEMRIWaveforms Publications &mdash; few: Fast EMRI Waveforms 0.1.0 documentation</title>
@@ -84,8 +89,12 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
-      <li class="breadcrumb-item active">FastEMRIWaveforms Publications</li>
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>FastEMRIWaveforms Publications</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/general/docs_main.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -128,9 +137,9 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="fastemriwaveforms-publication">
-<h1>FastEMRIWaveforms Publication<a class="headerlink" href="#fastemriwaveforms-publication" title="Permalink to this headline">¶</a></h1>
-<p>The Fast EMRI Waveforms papers can be found at <a class="reference external" href="https://arxiv.org/abs/2104.04582">arxiv.org/2104.04582</a> and <a class="reference external" href="https://arxiv.org/abs/2008.06071">arxiv.org/2008.06071</a>. Below is a brief description of the paper, including plots. Please refer to the paper for more detailed information.</p>
+<div class="section" id="fastemriwaveforms-publications">
+<h1>FastEMRIWaveforms Publications<a class="headerlink" href="#fastemriwaveforms-publications" title="Permalink to this headline">¶</a></h1>
+<p>The Fast EMRI Waveforms papers can be found at <a class="reference external" href="https://arxiv.org/abs/2104.04582">arxiv.org/2104.04582</a> and <a class="reference external" href="https://arxiv.org/abs/2008.06071">arxiv.org/2008.06071</a>. Below is a brief description of the model. Please refer to the paper for plots and more detailed information.</p>
 <p>Fast EMRI Waveform models are built for fast evaluation of the EMRI waveform summation equation, given by (<a class="reference external" href="https://arxiv.org/abs/gr-qc/0509101">Drasco &amp; Hughes 2006</a>),</p>
 <div class="math notranslate nohighlight" id="equation-emri-wave-eq">
 <span class="eqno">(1)<a class="headerlink" href="#equation-emri-wave-eq" title="Permalink to this equation">¶</a></span>\[h_+ + ih_x=r^{-1}\sum_{lmkn}A_{lmkn}(t)e^{-i\Phi_{mkn}(t)}V_{lmkn}(\theta,\phi),\]</div>
@@ -142,9 +151,9 @@
 \[V_{lmkn}(\theta, \phi) = (s=-2)S_{lmkn}(\theta)e^{im\phi},\]</div>
 <p>where <span class="math notranslate nohighlight">\(S_{lmkn}(\theta)\)</span> is the general angular function from <a class="reference external" href="https://arxiv.org/abs/gr-qc/0509101">Drasco &amp; Hughes 2006</a> (spin-weighted spheroidal harmonics).</p>
 <p>When these modules complete their calculations, the summation (<a class="reference internal" href="../user/sum.html#module-few.summation" title="few.summation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">few.summation</span></code></a>) module takes all of this information and creates an EMRI waveform.</p>
-</section>
-<section id="package-todos">
-<h1>Package TODOs<a class="headerlink" href="#package-todos" title="Permalink to this heading"></a></h1>
+</div>
+<div class="section" id="package-todos">
+<h1>Package TODOs<a class="headerlink" href="#package-todos" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p>add SNR calculator</p></li>
 <li><p>run trajectory backward</p></li>

@@ -2,7 +2,7 @@
 FastEMRIWaveforms Publications
 ================================
 
-The Fast EMRI Waveforms papers can be found at `arxiv.org/2104.04582 <https://arxiv.org/abs/2104.04582>`_ and `arxiv.org/2008.06071 <https://arxiv.org/abs/2008.06071>`_. Below is a brief description of the paper, including plots. Please refer to the paper for more detailed information.
+The Fast EMRI Waveforms papers can be found at `arxiv.org/2104.04582 <https://arxiv.org/abs/2104.04582>`_ and `arxiv.org/2008.06071 <https://arxiv.org/abs/2008.06071>`_. Below is a brief description of the model. Please refer to the paper for plots and more detailed information.
 
 Fast EMRI Waveform models are built for fast evaluation of the EMRI waveform summation equation, given by (`Drasco & Hughes 2006 <https://arxiv.org/abs/gr-qc/0509101>`_),
 
