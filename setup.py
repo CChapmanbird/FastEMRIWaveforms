@@ -155,21 +155,14 @@ parser.add_argument(
 
 args, unknown = parser.parse_known_args()
 
-for key in [
-    args.gsl_include,
-    args.gsl_lib,
-    args.gsl,
-    "--gsl",
-    "--gsl_include",
-    "--gsl_lib",
-    args.lapack_include,
-    args.lapack_lib,
-    args.lapack,
-    "--lapack",
-    "--lapack_lib",
-    "--lapack_include",
-    args.ccbin,
-    "--ccbin",
+for key1, key2 in [
+    ["--gsl_include", args.gsl_include],
+    ["--gsl_lib", args.gsl_lib],
+    ["--gsl", args.gsl],
+    ["--lapack_include", args.lapack_include],
+    ["--lapack_lib", args.lapack_lib],
+    ["--lapack", args.lapack],
+    ["--ccbin", args.ccbin],
 ]:
     keys = [key1, key2]
     if key2 is not None:
@@ -179,6 +172,9 @@ for key in [
             sys.argv.remove(key)
         except ValueError:
             pass
+
+use_omp = not args.no_omp
+
 
 # Obtain the numpy include directory. This logic works across numpy versions.
 try:
@@ -280,7 +276,6 @@ if run_cuda_install:
             0, "-ccbin={0}".format(args.ccbin)
         )
 
-    breakpoint()
     if args.ccbin is not None:
         gpu_extension["extra_compile_args"]["nvcc"].insert(
             0, "-ccbin={0}".format(args.ccbin)
