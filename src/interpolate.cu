@@ -192,7 +192,7 @@ void set_spline_constants(double *t_arr, double *interp_array, double *B,
 #endif // __CUDACC__
 
                 int lead_ind = interp_i*length;
-                prep_splines(i, length, &B[lead_ind], &upper_diag[lead_ind], &diag[lead_ind], &lower_diag[lead_ind], t_arr, &y_all[interp_i*length]);
+                prep_splines(i, length, &B[lead_ind], &upper_diag[lead_ind], &diag[lead_ind], &lower_diag[lead_ind], &t_arr[lead_ind], &y_all[interp_i*length]);
             }
         }
 }
@@ -273,13 +273,7 @@ void fill_final_derivs(double *t_arr, double *interp_array,
             double c2 = interp_array[(2 * ninterps +  interp_i) * length + length - 2];
             double c3 = interp_array[(3 * ninterps +  interp_i) * length + length - 2];
 
-            double t_begin = t_arr[interp_i * length + length - 2];
-            double t_end = t_arr[interp_i * length + length - 1];
-            double x = t_end - t_begin;
-            double x2 = x * x;
-            double final_c1 = c1 + 2 * c2 * x + 3 * c3 * x2;
-            double final_c2 = (2. * c2 + 6. * c3 * x)/2.;
-            double final_c3 = c3;
+              dt = t_arr[interp_i * length + i + 1] - t_arr[interp_i * length + i];
 
             interp_array[(1 * ninterps +  interp_i) * length + length - 1] = c1;
             interp_array[(2 * ninterps +  interp_i) * length + length - 1] = c2;

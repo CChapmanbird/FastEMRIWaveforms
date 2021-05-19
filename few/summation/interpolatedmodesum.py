@@ -122,7 +122,23 @@ class CubicSplineInterpolant(GPUModuleBase):
         else:
             raise ValueError("t must be 1 or 2 dimensions.")
 
-        self.t = t.astype(xp.float64)
+        if t.ndim == 1:
+            if len(t) < 2:
+                raise ValueError("t must have length greater than 2.")
+
+            # could save memory by adjusting c code to treat 1D differently
+            self.t = self.xp.tile(t, (ninterps, 1)).flatten().astype(xp.float64)
+
+        elif t.ndim == 2:
+            if t.shape[1] < 2:
+                raise ValueError("t must have length greater than 2 along time axis.")
+
+            # TODO: need copy?
+            self.t = t.flatten().copy().astype(xp.float64)
+
+        else:
+            raise ValueError("t must be 1 or 2 dimensions.")
+
         # perform interpolation
         self.interpolate_arrays(
             self.t, interp_array, ninterps, length, B, upper_diag, diag, lower_diag,
@@ -181,16 +197,10 @@ class CubicSplineInterpolant(GPUModuleBase):
     def _get_inds(self, tnew):
         # find were in the old t array the new t values split
 
-        if self.use_gpu:
-            xp = cp
-        else:
-            xp = np
-
-        inds = xp.zeros((self.ninterps, tnew.shape[1]), dtype=int)
-
-        # Optional TODO: remove loop ? if speed needed
+        inds = self.xp.zeros((self.ninterps, tnew.shape[1]), dtype=int)
+        # TODO: remove loop ? if speed needed
         for i, (t, tnew_i) in enumerate(zip(self.t, tnew)):
-            inds[i] = xp.searchsorted(t, tnew_i, side="right") - 1
+            inds[i] = self.xp.searchsorted(t, tnew_i, side="right") - 1
 
             # fix end value
             inds[i][tnew_i == t[-1]] = len(t) - 2
@@ -235,35 +245,19 @@ class CubicSplineInterpolant(GPUModuleBase):
         else:
             xp = np
 
-        tnew = xp.atleast_1d(tnew)
+        tnew = self.xp.atleast_1d(tnew)
 
-        # get values outside the edges
-        inds_bad_left = tnew < self.t[0]
-        inds_bad_right = tnew > self.t[-1]
-
-        if np.any(inds < 0) or np.any(inds >= len(self.t)):
-            warnings.warn(
-                "New t array outside bounds of input t array. These points are filled with edge values."
-            )
+        if tnew.ndim == 2:
+            if tnew.shape[0] != self.t.shape[0]:
+                raise ValueError(
+                    "If providing a 2D tnew array, must have some number of interpolants as was entered during initialization."
+                )
 
         # copy input to all splines
         elif tnew.ndim == 1:
-            tnew = xp.tile(tnew, (self.t.shape[0], 1))
+            tnew = self.xp.tile(tnew, (self.t.shape[0], 1))
 
-        out = (
-            self.y[:, inds]
-            + self.c1[:, inds] * x
-            + self.c2[:, inds] * x2
-            + self.c3[:, inds] * x3
-        )
-
-        # fix bad values
-        if self.xp.any(inds_bad_left):
-            out[:, inds_bad_left] = self.y[:, 0]
-
-        if self.xp.any(inds_bad_right):
-            out[:, inds_bad_right] = self.y[:, -1]
-        return out.squeeze()
+        tnew = self.xp.atleast_2d(tnew)
 
         # get indices into spline
         inds, inds_bad_left, inds_bad_right = self._get_inds(tnew)
@@ -298,17 +292,17 @@ class CubicSplineInterpolant(GPUModuleBase):
         if deriv_order == 0:
             out = y + c1 * x + c2 * x2 + c3 * x3
             # fix bad values
-            if xp.any(inds_bad_left):
-                temp = xp.tile(self.y[:, 0], (tnew.shape[1], 1)).T
+            if self.xp.any(inds_bad_left):
+                temp = self.xp.tile(self.y[:, 0], (tnew.shape[1], 1)).T
                 out[inds_bad_left] = temp[inds_bad_left]
 
-            if xp.any(inds_bad_right):
-                temp = xp.tile(self.y[:, -1], (tnew.shape[1], 1)).T
+            if self.xp.any(inds_bad_right):
+                temp = self.xp.tile(self.y[:, -1], (tnew.shape[1], 1)).T
                 out[inds_bad_right] = temp[inds_bad_right]
 
         else:
             # derivatives
-            if xp.any(inds_bad_right) or xp.any(inds_bad_left):
+            if self.xp.any(inds_bad_right) or self.xp.any(inds_bad_left):
                 raise ValueError(
                     "x points outside of the domain of the spline are not supported when taking derivatives."
                 )
