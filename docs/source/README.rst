@@ -227,22 +227,6 @@ line options when installing. You can also remove usage of OpenMP.
      --ccbin CCBIN         path/to/compiler to link with nvcc when installing
                            with CUDA.
 
-When installing the package with ``python setup.py install``, the setup
-file uses the C compiler present in your ``PATH``. However, it might
-happen that the setup file incorrectly uses another compiler present on
-your path. To solve this issue you can directly specify the C compiler
-using the flag ``--ccbin`` as in the following example:
-
-::
-
-   python setup.py install --ccbin /path/to/anaconda3/envs/few_env/bin/x86_64-conda-linux-gnu-gcc
-
-or if on MACOSX:
-
-::
-
-   python setup.py install --ccbin /path/to/anaconda3/envs/few_env/bin/x86_64-apple-darwin13.4.0-clang
-
 Running the Tests
 -----------------
 
@@ -278,7 +262,7 @@ We use `SemVer <http://semver.org/>`__ for versioning. For the versions
 available, see the `tags on this
 repository <https://github.com/BlackHolePerturbationToolkit/FastEMRIWaveforms/tags>`__.
 
-Current Version: 1.3.3
+Current Version: 1.3.5
 
 Authors/Developers
 ------------------
