@@ -27,10 +27,10 @@ import numpy as np
 from pySpinWeightedSpherHarm import get_spin_weighted_spher_harm_wrap
 
 # base classes
-from few.utils.baseclasses import GPUModuleBase
+from few.utils.baseclasses import ParallelModuleBase
 
 
-class GetYlms(GPUModuleBase):
+class GetYlms(ParallelModuleBase):
     """(-2) Spin-weighted Spherical Harmonics
 
     The class generates (-2) spin-weighted spherical hackarmonics,
@@ -48,9 +48,9 @@ class GetYlms(GPUModuleBase):
 
     """
 
-    def __init__(self, assume_positive_m=False, use_gpu=False):
+    def __init__(self, assume_positive_m=False, **kwargs):
 
-        GPUModuleBase.__init__(self, use_gpu=use_gpu)
+        ParallelModuleBase.__init__(self, **kwargs)
         # see args in docstring
         self.assume_positive_m = assume_positive_m
 

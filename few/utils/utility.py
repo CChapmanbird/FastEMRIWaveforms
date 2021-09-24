@@ -29,6 +29,8 @@ from pyFundamentalFrequencies import (
     pyGetSeparatrix,
     pyKerrGeoConstantsOfMotionVectorized,
     pyY_to_xI_vector,
+    set_threads_wrap,
+    get_threads_wrap
 )
 
 # check to see if cupy is available for gpus
@@ -790,36 +792,17 @@ def pointer_adjust(func):
 
     return func_wrapper
 
-
-def cuda_set_device(dev):
-    """Globally sets CUDA device
+def omp_set_num_threads(num_threads=1):
+    """Globally sets OMP_NUM_THREADS
 
     Args:
-        dev (int): CUDA device number.
+        num_threads (int, optional): Number of parallel threads to use in OpenMP.
+            Default is 1.
 
     """
-    if setDevice is not None:
-        setDevice(dev)
-    else:
-        warnings.warn("Setting cuda device, but cupy/cuda not detected.")
+    set_threads_wrap(num_threads)
 
-
-def get_ode_function_options():
-    """Get ode options.
-
-    This includes all the subinfo for each ODE derivative
-    function that is available.
-
-    Returns:
-        dict: Dictionary with all the information on available functions.
-
-    Raises:
-        ValueError: ODE files have not been built.
-
-    """
-    try:
-        from few.utils.odeoptions import ode_options
-    except (ImportError, ModuleNotFoundError) as e:
-        raise ValueError("ODE files not built yet.")
-
-    return ode_options
+def omp_get_num_threads():
+    """Get global variable OMP_NUM_THREADS"""
+    num_threads = get_threads_wrap()
+    return num_threads
