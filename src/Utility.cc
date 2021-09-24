@@ -1,106 +1,40 @@
 #include "stdio.h"
 #include "math.h"
 #include "global.h"
-#include <stdexcept>
-#include "Utility.hh"
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>
-#include "Python.h"
 
 #ifdef __USE_OMP__
 #include "omp.h"
 #endif
 
-int sanity_check(double a, double p, double e, double Y){
-    int res = 0;
-    
-    if (p<0.0) return 1;
-    if ((e>1.0)||(e<0.0)) return 1;
-    if ((Y>1.0)||(Y<-1.0)) return 1;
-    if ((a>1.0)||(a<0.0)) return 1;
-    
-    if (res==1){
-        printf("a, p, e, Y = %f %f %f %f ",a, p, e, Y);
-        // throw std::invalid_argument( "Sanity check wrong");
-    }
-    return res;
-}
 
 // Define elliptic integrals that use Mathematica's conventions
 double EllipticK(double k){
-    gsl_sf_result result;
-    int status = gsl_sf_ellint_Kcomp_e(sqrt(k), GSL_PREC_DOUBLE, &result);
-    if (status != GSL_SUCCESS)
-    {
-        char str[1000];
-        sprintf(str, "EllipticK failed with argument k: %e", k);
-        throw std::invalid_argument(str);
-    }
-    return result.val;
+        return gsl_sf_ellint_Kcomp(sqrt(k), GSL_PREC_DOUBLE);
 }
 
 double EllipticF(double phi, double k){
-    gsl_sf_result result;
-    int status = gsl_sf_ellint_F_e(phi, sqrt(k), GSL_PREC_DOUBLE, &result);
-    if (status != GSL_SUCCESS)
-    {
-        char str[1000];
-        sprintf(str, "EllipticF failed with arguments phi:%e k: %e", phi, k);
-        throw std::invalid_argument(str);
-    }
-    return result.val;
+        return gsl_sf_ellint_F(phi, sqrt(k), GSL_PREC_DOUBLE) ;
 }
 
 double EllipticE(double k){
-    gsl_sf_result result;
-    int status = gsl_sf_ellint_Ecomp_e(sqrt(k), GSL_PREC_DOUBLE, &result);
-    if (status != GSL_SUCCESS)
-    {
-        char str[1000];
-        sprintf(str, "EllipticE failed with argument k: %e", k);
-        throw std::invalid_argument(str);
-    }
-    return result.val;
+        return gsl_sf_ellint_Ecomp(sqrt(k), GSL_PREC_DOUBLE);
 }
 
 double EllipticEIncomp(double phi, double k){
-    gsl_sf_result result;
-    int status = gsl_sf_ellint_E_e(phi, sqrt(k), GSL_PREC_DOUBLE, &result);
-    if (status != GSL_SUCCESS)
-    {
-        char str[1000];
-        sprintf(str, "EllipticEIncomp failed with argument k: %e", k);
-        throw std::invalid_argument(str);
-    }
-    return result.val;
+        return gsl_sf_ellint_E(phi, sqrt(k), GSL_PREC_DOUBLE) ;
 }
 
 double EllipticPi(double n, double k){
-    gsl_sf_result result;
-    int status = gsl_sf_ellint_Pcomp_e(sqrt(k), -n, GSL_PREC_DOUBLE, &result);
-    if (status != GSL_SUCCESS)
-    {
-        char str[1000];
-        printf("55: %e\n", k);
-        sprintf(str, "EllipticPi failed with arguments (k,n): (%e,%e)", k, n);
-        throw std::invalid_argument(str);
-    }
-    return result.val;
+        return gsl_sf_ellint_Pcomp(sqrt(k), -n, GSL_PREC_DOUBLE);
 }
 
 double EllipticPiIncomp(double n, double phi, double k){
-    gsl_sf_result result;
-    int status = gsl_sf_ellint_P_e(phi, sqrt(k), -n, GSL_PREC_DOUBLE, &result);
-    if (status != GSL_SUCCESS)
-    {
-        char str[1000];
-        sprintf(str, "EllipticPiIncomp failed with argument k: %e", k);
-        throw std::invalid_argument(str);
-    }
-    return result.val;
+        return gsl_sf_ellint_P(phi, sqrt(k), -n, GSL_PREC_DOUBLE);
 }
 
 
@@ -172,7 +106,9 @@ void KerrGeoConstantsOfMotion(double* E_out, double* L_out, double* Q_out, doubl
 
 void KerrGeoConstantsOfMotionVectorized(double* E_out, double* L_out, double* Q_out, double* a, double* p, double* e, double* x, int n)
 {
-
+    #ifdef __USE_OMP__
+    #pragma omp parallel for
+    #endif
     for (int i = 0; i < n; i += 1)
     {
         KerrGeoConstantsOfMotion(&E_out[i], &L_out[i], &Q_out[i], a[i], p[i], e[i], x[i]);
@@ -254,67 +190,9 @@ void KerrGeoCoordinateFrequencies(double* OmegaPhi_, double* OmegaTheta_, double
 
 }
 
-void KerrGeoEquatorialMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, double* CapitalUpsilonTheta_, double* CapitalUpsilonr_,
-                              double a, double p, double e, double x)
-{
-    double M = 1.0;
-
-    double En = KerrGeoEnergy(a, p, e, x);
-    double L = KerrGeoAngularMomentum(a, p, e, x, En);
-    double Q = KerrGeoCarterConstant(a, p, e, x, En, L);
-
-    // get radial roots
-    double r1, r2, r3, r4;
-    KerrGeoRadialRoots(&r1, &r2, &r3, &r4, a, p, e, x, En, Q);
-
-    double Epsilon0 = pow(a, 2) * (1 - pow(En, 2))/pow(L, 2);
-    //double zm = 0;
-    double a2zp =(pow(L, 2) + pow(a, 2) * (-1 + pow(En, 2)) * (-1))/( (-1 + pow(En, 2)) * (-1));
-
-    double Epsilon0zp = -((pow(L, 2)+ pow(a, 2) * (-1 + pow(En, 2)) * (-1))/(pow(L, 2) * (-1)));
-
-    double zp = pow(a,2)* (1 - pow(En,2)) + pow(L,2);
-
-    double kr = sqrt((r1-r2)/(r1-r3) * (r3-r4)/(r2-r4)); //(*Eq.(13)*)
-    //double kTheta = 0; //(*Eq.(13)*)
-    double CapitalUpsilonr = (M_PI * sqrt((1 - pow(En, 2)) * (r1-r3) * (r2)))/(2 * EllipticK(pow(kr, 2))); //(*Eq.(15)*)
-    double CapitalUpsilonTheta= x * pow(zp,0.5); //(*Eq.(15)*)
-
-    double rp = M + sqrt(pow(M, 2) - pow(a, 2));
-    double rm = M - sqrt(pow(M, 2) - pow(a, 2));
-
-    double hr = (r1 - r2)/(r1 - r3);
-    double hp = ((r1 - r2) * (r3 - rp))/((r1 - r3) * (r2 - rp));
-    double hm = ((r1 - r2) * (r3 - rm))/((r1 - r3) * (r2 - rm));
-
-    // (*Eq. (21)*)
-    double CapitalUpsilonPhi = (CapitalUpsilonTheta)/(sqrt(Epsilon0zp)) + (2 * a * CapitalUpsilonr)/(M_PI * (rp - rm) * sqrt((1 - pow(En, 2)) * (r1 - r3) * (r2 - r4))) * ((2 * M * En * rp - a * L)/(r3 - rp) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rp) * EllipticPi(hp, pow(kr, 2))) - (2 * M * En * rm - a * L)/(r3 - rm) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rm) * EllipticPi(hm, pow(kr,2))));
-
-    double CapitalGamma = 4 * pow(M, 2) * En+ (2 * CapitalUpsilonr)/(M_PI * sqrt((1 - pow(En, 2)) * (r1 - r3) * (r2 - r4))) * (En/2 * ((r3 * (r1 + r2 + r3) - r1 * r2) * EllipticK(pow(kr, 2)) + (r2 - r3) * (r1 + r2 + r3 + r4) * EllipticPi(hr,pow(kr, 2)) + (r1 - r3) * (r2 - r4) * EllipticE(pow(kr, 2))) + 2 * M * En * (r3 * EllipticK(pow(kr, 2)) + (r2 - r3) * EllipticPi(hr,pow(kr, 2))) + (2* M)/(rp - rm) * (((4 * pow(M, 2) * En - a * L) * rp - 2 * M * pow(a, 2) * En)/(r3 - rp) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rp) * EllipticPi(hp, pow(kr, 2))) - ((4 * pow(M, 2) * En - a * L) * rm - 2 * M * pow(a, 2) * En)/(r3 - rm) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rm) * EllipticPi(hm,pow(kr, 2)))));
-
-    *CapitalGamma_ = CapitalGamma;
-    *CapitalUpsilonPhi_ = CapitalUpsilonPhi;
-    *CapitalUpsilonTheta_ = abs(CapitalUpsilonTheta);
-    *CapitalUpsilonr_ = CapitalUpsilonr;
-}
-
-void KerrGeoEquatorialCoordinateFrequencies(double* OmegaPhi_, double* OmegaTheta_, double* OmegaR_,
-                              double a, double p, double e, double x)
-{
-    double CapitalGamma, CapitalUpsilonPhi, CapitalUpsilonTheta, CapitalUpsilonR;
-    
-    KerrGeoEquatorialMinoFrequencies(&CapitalGamma, &CapitalUpsilonPhi, &CapitalUpsilonTheta, &CapitalUpsilonR,
-                                  a, p, e, x);
-
-    *OmegaPhi_ = CapitalUpsilonPhi / CapitalGamma;
-    *OmegaTheta_ = CapitalUpsilonTheta / CapitalGamma;
-    *OmegaR_ = CapitalUpsilonR / CapitalGamma;
-
-}
-
-
 void SchwarzschildGeoCoordinateFrequencies(double* OmegaPhi, double* OmegaR, double p, double e)
 {
+
     // Need to evaluate 4 different elliptic integrals here. Cache them first to avoid repeated calls.
 	double EllipE 	= EllipticE(4*e/(p-6.0+2*e));
 	double EllipK 	= EllipticK(4*e/(p-6.0+2*e));;
@@ -335,22 +213,15 @@ void KerrGeoCoordinateFrequenciesVectorized(double* OmegaPhi_, double* OmegaThet
                               double* a, double* p, double* e, double* x, int length)
 {
 
-
+    #ifdef __USE_OMP__
+    #pragma omp parallel for
+    #endif
     for (int i = 0; i < length; i += 1)
     {
         if (a[i] != 0.0)
         {
-            if(abs(x[i]) != 1.)
-            {
-                KerrGeoCoordinateFrequencies(&OmegaPhi_[i], &OmegaTheta_[i], &OmegaR_[i],
+            KerrGeoCoordinateFrequencies(&OmegaPhi_[i], &OmegaTheta_[i], &OmegaR_[i],
                                       a[i], p[i], e[i], x[i]);
-            }
-            else
-            {
-                KerrGeoEquatorialCoordinateFrequencies(&OmegaPhi_[i], &OmegaTheta_[i], &OmegaR_[i],
-                                      a[i], p[i], e[i], x[i]);
-            }
-            
         }
         else
         {
@@ -409,9 +280,8 @@ double separatrix_polynomial_equat(double p, void *params_in)
 double
 solver (struct params_holder* params, double (*func)(double, void*), double x_lo, double x_hi)
 {
-    gsl_set_error_handler_off();
     int status;
-    int iter = 0, max_iter = 1000;
+    int iter = 0, max_iter = 100;
     const gsl_root_fsolver_type *T;
     gsl_root_fsolver *s;
     double r = 0, r_expected = sqrt (5.0);
@@ -424,10 +294,6 @@ solver (struct params_holder* params, double (*func)(double, void*), double x_lo
     s = gsl_root_fsolver_alloc (T);
     gsl_root_fsolver_set (s, &F, x_lo, x_hi);
 
-    // printf("-----------START------------------- \n");
-    // printf("xlo xhi %f %f\n", x_lo, x_hi);
-    // double epsrel=0.001;
-    double epsrel = 0.00001; // Decreased tolorance
     do
       {
         iter++;
@@ -435,29 +301,10 @@ solver (struct params_holder* params, double (*func)(double, void*), double x_lo
         r = gsl_root_fsolver_root (s);
         x_lo = gsl_root_fsolver_x_lower (s);
         x_hi = gsl_root_fsolver_x_upper (s);
-        status = gsl_root_test_interval (x_lo, x_hi, 0.0, epsrel);
-       
-        // printf("result %f %f %f \n", r, x_lo, x_hi);
+        status = gsl_root_test_interval (x_lo, x_hi,
+                                         0, 0.001);
       }
     while (status == GSL_CONTINUE && iter < max_iter);
-    
-    // printf("result %f %f %f \n", r, x_lo, x_hi);
-    // printf("stat, iter, GSL_SUCCESS %d %d %d\n", status, iter, GSL_SUCCESS);
-    // printf("-----------END------------------- \n");
-
-    if (status != GSL_SUCCESS)
-    {
-        // warning if it did not converge otherwise throw error
-        if (iter == max_iter){
-            printf("WARNING: Maximum iteration reached in Utility.cc in Brent root solver.\n");
-            printf("Result=%f, x_low=%f, x_high=%f \n", r, x_lo, x_hi);
-            printf("a, p, e, Y, sep = %f %f %f %f %f\n", params->a, params->p, params->e, params->Y, get_separatrix(params->a, params->e, r));
-        }
-        else
-        {
-            throw std::invalid_argument( "In Utility.cc Brent root solver failed");
-        }
-    }
 
     gsl_root_fsolver_free (s);
     return r;
@@ -465,99 +312,46 @@ solver (struct params_holder* params, double (*func)(double, void*), double x_lo
 
 double get_separatrix(double a, double e, double x)
 {
-    double p_sep, z1, z2;
-    double sign;
-    if (a == 0.0)
+    // fills in p and Y with zeros
+    struct params_holder params = {a, 0.0, e, x, 0.0};
+    double x_lo, x_hi;
+
+    // solve for polar p_sep
+    x_lo = 1.0 + sqrt(3.0) + sqrt(3.0 + 2.0 * sqrt(3.0));
+    x_hi = 8.0;
+
+
+
+    double polar_p_sep = solver (&params, &separatrix_polynomial_polar, x_lo, x_hi);
+    if (x == 0.0) return polar_p_sep;
+
+    double equat_p_sep, p_sep;
+    if (x > 0.0)
     {
-        p_sep = 6.0 + 2.0 * e;
-        return p_sep;
-    }
-    else if ((e == 0.0) & (abs(x) == 1.0))
-    {
-        z1 = 1. + pow((1. - pow(a,  2)), 1./3.) * (pow((1. + a), 1./3.)
-             + pow((1. - a), 1./3.));
-
-        z2 = sqrt(3. * pow(a, 2) + pow(z1, 2));
-
-        // prograde
-        if (x > 0.0)
-        {
-            sign = -1.0;
-        }
-        // retrograde
-        else
-        {
-            sign = +1.0;
-        }
-
-        p_sep = (3. + z2 + sign * sqrt((3. - z1) * (3. + z1 + 2. * z2)));
-        return p_sep;
-    }
-    else if (x == 1.0) // Eccentric Prograde Equatorial
-    {
-        // fills in p and Y with zeros
-        struct params_holder params = {a, 0.0, e, x, 0.0};
-        double x_lo, x_hi;
-
         x_lo = 1.0 + e;
         x_hi = 6 + 2. * e;
 
-        p_sep = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);
-        return p_sep;
-    }
-    else if (x == -1.0) // Eccentric Retrograde Equatorial
+        equat_p_sep = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);
+
+        x_lo = equat_p_sep;
+        x_hi = polar_p_sep;
+    } else
     {
-        // fills in p and Y with zeros
-        struct params_holder params = {a, 0.0, e, x, 0.0};
-        double x_lo, x_hi;
-
-        x_lo = 6 + 2. * e;
-        x_hi = 5+e+4 *Sqrt(1+e); 
-
-        p_sep = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);
-        return p_sep;
+        x_lo = polar_p_sep;
+        x_hi = 12.0;
     }
-    else
-    {
-        // fills in p and Y with zeros
-        struct params_holder params = {a, 0.0, e, x, 0.0};
-        double x_lo, x_hi;
 
-        // solve for polar p_sep
-        x_lo = 1.0 + sqrt(3.0) + sqrt(3.0 + 2.0 * sqrt(3.0));
-        x_hi = 8.0;
+    p_sep = solver (&params, &separatrix_polynomial_full, x_lo, x_hi);
 
-
-
-        double polar_p_sep = solver (&params, &separatrix_polynomial_polar, x_lo, x_hi);
-        if (x == 0.0) return polar_p_sep;
-
-        double equat_p_sep;
-        if (x > 0.0)
-        {
-            x_lo = 1.0 + e;
-            x_hi = 6 + 2. * e;
-
-            equat_p_sep = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);
-
-            x_lo = equat_p_sep;
-            x_hi = polar_p_sep;
-        } else
-        {
-            x_lo = polar_p_sep;
-            x_hi = 12.0;
-        }
-
-        p_sep = solver (&params, &separatrix_polynomial_full, x_lo, x_hi);
-
-        return p_sep;
-    }
+    return p_sep;
 }
 
 void get_separatrix_vector(double* separatrix, double* a, double* e, double* x, int length)
 {
 
-
+    #ifdef __USE_OMP__
+    #pragma omp parallel for
+    #endif
     for (int i = 0; i < length; i += 1)
     {
         separatrix[i] = get_separatrix(a[i], e[i], x[i]);
@@ -578,6 +372,7 @@ double Y_to_xI_eq(double x, void *params_in)
 
     // get constants of motion
     KerrGeoConstantsOfMotion(&E, &L, &Q, a, p, e, x);
+
     double Y_ = L / sqrt(pow(L, 2) + Q);
 
     return Y - Y_;
@@ -594,22 +389,62 @@ double Y_to_xI(double a, double p, double e, double Y)
 
     // set limits
     // assume Y is close to x
-    x_lo = Y - 0.15;
-    x_hi = Y + 0.15;
+    x_lo = Y - 0.1;
+    x_hi = Y + 0.1;
 
     x_lo = x_lo > -YLIM? x_lo : -YLIM;
     x_hi = x_hi < YLIM? x_hi : YLIM;
 
     double x = solver (&params, &Y_to_xI_eq, x_lo, x_hi);
-   
+
     return x;
 }
 
 void Y_to_xI_vector(double* x, double* a, double* p, double* e, double* Y, int length)
 {
+
+    #ifdef __USE_OMP__
+    #pragma omp parallel for
+    #endif
     for (int i = 0; i < length; i += 1)
     {
         x[i] = Y_to_xI(a[i], p[i], e[i], Y[i]);
     }
 
 }
+
+
+void set_threads(int num_threads)
+{
+    omp_set_num_threads(num_threads);
+}
+
+int get_threads()
+{
+    int num_threads;
+    #pragma omp parallel for
+    for (int i = 0; i < 1; i +=1)
+    {
+        num_threads = omp_get_num_threads();
+    }
+
+    return num_threads;
+}
+
+
+
+
+/*
+int main()
+{
+    double a = 0.5;
+    double p = 10.0;
+    double e = 0.2;
+    double iota = 0.4;
+    double x = cos(iota);
+
+    double temp = KerrGeoMinoFrequencies(a, p, e, x);
+
+    //printf("%e %e %e\n", En, L, C);
+}
+*/
