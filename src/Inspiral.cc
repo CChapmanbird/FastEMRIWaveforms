@@ -51,8 +51,6 @@
 #include <iomanip>      // std::setprecision
 #include <cstring>
 
-#include <stdexcept>
-
 
 using namespace std;
 using namespace std::chrono;
@@ -79,29 +77,16 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
     // check for separatrix
     // integrator may naively step over separatrix
     double x_temp;
-
-    // define a sanity check
-    if(sanity_check(a, p, e, x)==1){
-        return GSL_EBADFUNC;
-    }
-    double p_sep = 0.0;
     if (params_in->convert_Y)
     {
-        // estimate separatrix with Y since it is close to x
-        // make sure we are not inside it or root solver will struggle
-        p_sep = get_separatrix(a, e, x);
-        // make sure we are outside the separatrix
-        if (p < p_sep + DIST_TO_SEPARATRIX)
-        {
-            return GSL_EBADFUNC;
-        }
         x_temp = Y_to_xI(a, p, e, x);
     }
     else
     {
         x_temp = x;
     }
-    
+
+    double p_sep = 0.0;
     if (params_in->enforce_schwarz_sep || (a == 0.0))
     {
         p_sep = 6.0 + 2. * e;
@@ -111,6 +96,7 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
         p_sep = get_separatrix(a, e, x_temp);
     }
 
+
     // make sure we are outside the separatrix
     if (p < p_sep + DIST_TO_SEPARATRIX)
     {
@@ -118,64 +104,58 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
     }
 
     double pdot, edot, xdot;
-	double Omega_phi, Omega_theta, Omega_r;
+	double Phi_phi_dot, Phi_theta_dot, Phi_r_dot;
 
     params_in->func->get_derivatives(&pdot, &edot, &xdot,
-                         &Omega_phi, &Omega_theta, &Omega_r,
+                         &Phi_phi_dot, &Phi_theta_dot, &Phi_r_dot,
                          epsilon, a, p, e, x, params_in->additional_args);
 
     f[0] = pdot;
 	f[1] = edot;
     f[2] = xdot;
-	f[3] = Omega_phi;
-    f[4] = Omega_theta;
-	f[5] = Omega_r;
+	f[3] = Phi_phi_dot;
+    f[4] = Phi_theta_dot;
+	f[5] = Phi_r_dot;
 
   return GSL_SUCCESS;
 }
 
 
-InspiralCarrier::InspiralCarrier(ODECarrier* testcarrier_, std::string func_name, bool enforce_schwarz_sep_, int num_add_args_, bool convert_Y_, std::string few_dir)
+// Class to carry gsl interpolants for the inspiral data
+// also executes inspiral calculations
+InspiralCarrier::InspiralCarrier(std::string func_name, bool enforce_schwarz_sep_, int num_add_args_, bool convert_Y_)
 {
     params_holder = new ParamsHolder;
     params_holder->func_name = func_name;
+    params_holder->func = new ODECarrier(func_name);
     params_holder->enforce_schwarz_sep = enforce_schwarz_sep_;
     params_holder->num_add_args = num_add_args_;
     params_holder->convert_Y = convert_Y_;
+
     params_holder->additional_args = new double[num_add_args_];
-    params_holder->func = testcarrier_;
 }
 
-void InspiralCarrier::inspiral_wrapper(double *t, double *p, double *e, double *x, double *Phi_phi, double *Phi_theta, double *Phi_r, double M, double mu, double a, double p0, double e0, double x0, double Phi_phi0, double Phi_theta0, double Phi_r0, int *length, double tmax, double dt, double err, int DENSE_STEPPING, bool use_rk4, int init_len, double* additional_args)
+// When interfacing with cython, it helps to have dealloc function to explicitly call
+// rather than the deconstructor
+void InspiralCarrier::dealloc()
 {
-    double t0 = 0.0;
-    std::memcpy(params_holder->additional_args, additional_args, params_holder->num_add_args * sizeof(double));
-    InspiralHolder Inspiral_vals = run_inspiral(t0, M, mu, a, p0, e0, x0, Phi_phi0, Phi_theta0, Phi_r0, err, tmax, dt, DENSE_STEPPING, use_rk4);
- 
-    // make sure we have allocated enough memory through cython
-    if (Inspiral_vals.length > init_len){
-        throw std::invalid_argument("Error: Initial length is too short. Inspiral requires more points. Need to raise max_init_len parameter for inspiral.\n");
-        // throw std::runtime_error("Error: Initial length is too short. Inspiral requires more points. Need to raise max_init_len parameter for inspiral.\n");
-    }
-
-    // copy data
-    memcpy(t, &Inspiral_vals.t_arr[0], Inspiral_vals.length*sizeof(double));
-    memcpy(p, &Inspiral_vals.p_arr[0], Inspiral_vals.length*sizeof(double));
-    memcpy(e, &Inspiral_vals.e_arr[0], Inspiral_vals.length*sizeof(double));
-    memcpy(x, &Inspiral_vals.x_arr[0], Inspiral_vals.length*sizeof(double));
-    memcpy(Phi_phi, &Inspiral_vals.Phi_phi_arr[0], Inspiral_vals.length*sizeof(double));
-    memcpy(Phi_theta, &Inspiral_vals.Phi_theta_arr[0], Inspiral_vals.length*sizeof(double));
-    memcpy(Phi_r, &Inspiral_vals.Phi_r_arr[0], Inspiral_vals.length*sizeof(double));
-
-    // indicate how long is the trajectory
-    *length = Inspiral_vals.length;
+    delete params_holder->func;
+    delete params_holder->additional_args;
+    delete params_holder;
 }
 
-InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, double a, double p0, double e0, double x0, double Phi_phi0, double Phi_theta0, double Phi_r0, double err, double tmax, double dt, int DENSE_STEPPING, bool use_rk4)
+
+// main function in the InspiralCarrier class
+// It takes initial parameters and evolves a trajectory
+// tmax and dt affect integration length and time steps (mostly if DENSE_STEPPING == 1)
+// use_rk4 allows the use of the rk4 integrator
+InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, double a, double p0, double e0, double x0, double Phi_phi0, double Phi_theta0, double Phi_r0, double err, double tmax, double dt, int DENSE_STEPPING, bool use_rk4)
 {
     // years to seconds
     tmax = tmax*YRSID_SI;
 
+    // get flux at initial values
+    // prepare containers for flux information
     InspiralHolder inspiral_out(t0, M, mu, a, p0, e0, x0, Phi_phi0, Phi_theta0, Phi_r0);
 
 	//Set the mass ratio
@@ -194,8 +174,6 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
     // initial point
 	double y[6] = { p0, e0, x0, Phi_phi0, Phi_theta0, Phi_r0};
 
-
-    
     // Initialize the ODE solver
     gsl_odeiv2_system sys = {func_ode_wrap, NULL, 6, params_holder};
 
@@ -204,7 +182,7 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
     else T = gsl_odeiv2_step_rk8pd;
 
     gsl_odeiv2_step *step 			= gsl_odeiv2_step_alloc (T, 6);
-    gsl_odeiv2_control *control 	= gsl_odeiv2_control_y_new (err, 0);
+    gsl_odeiv2_control *control 	= gsl_odeiv2_control_y_new (1e-10, 0);
     gsl_odeiv2_evolve *evolve 		= gsl_odeiv2_evolve_alloc (6);
 
     // Compute the inspiral
@@ -223,6 +201,7 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
     int bad_limit = 1000;
 
 	while (t < tmax){
+
         // apply fixed step if dense stepping
         // or do interpolated step
 		if(DENSE_STEPPING) status = gsl_odeiv2_evolve_apply_fixed_step (evolve, control, step, &sys, &t, h, y);
@@ -234,7 +213,7 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
         }
         // if status is 9 meaning inside the separatrix
         // or if any quantity is nan, step back and take a smaller step.
-        else if ((std::isnan(y[0]))||(std::isnan(y[1]))||(std::isnan(y[2])) ||(std::isnan(y[3]))||(std::isnan(y[4]))||(std::isnan(y[5])))
+        else if ((status == 9)||(std::isnan(y[0]))||(std::isnan(y[1]))||(std::isnan(y[2])) ||(std::isnan(y[3]))||(std::isnan(y[4]))||(std::isnan(y[5])))
         {
             ///printf("checkit error %.18e %.18e %.18e %.18e \n", y[0], y_prev[0], y[1], y_prev[1]);
             // reset evolver
@@ -264,28 +243,13 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
         // if it made it here, reset bad num
         bad_num = 0;
 
-        double p 		= y[0];
-        double e 		= y[1];
-        double x        = y[2];
-
-        // check eccentricity
-        if (e < 0.0)
-        {
-            // integrator may have leaked past zero
-            if (e > -1e-3)
-            {
-                e = 1e-6;
-            }
-            // integrator went way past zero throw error.
-            else 
-            {
-                throw std::invalid_argument("Error: the integrator is stepping the eccentricity too far across zero (e < -1e-3).\n");
-            }
-        }
-
         // should not be needed but is safeguard against stepping past maximum allowable time
         // the last point in the trajectory will be at t = tmax
         if (t > tmax) break;
+
+        double p 		= y[0];
+        double e 		= y[1];
+        double x        = y[2];
 
         // count the number of points
         ind++;
@@ -293,36 +257,27 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
         // Stop the inspiral when close to the separatrix
         // convert to proper inclination for separatrix
         double x_temp;
-        double p_sep = 0.0;
-        if (status != 9)
+        if (params_holder->convert_Y)
         {
-
-            if (params_holder->convert_Y)
-            {
-                x_temp = Y_to_xI(a, p, e, x);
-                // if(sanity_check(a, p, e, x_temp)==1){
-                //     throw std::invalid_argument( "277 Wrong conversion to x_temp.");
-                // }
-            }
-            else
-            {
-                x_temp = x;
-            }
-
-
-            if (params_holder->enforce_schwarz_sep || (a == 0.0))
-            {
-                p_sep = 6.0 + 2. * e;
-            }
-            else
-            {
-                p_sep = get_separatrix(a, e, x_temp);
-            }
-
+            x_temp = Y_to_xI(a, p, e, x);
+        }
+        else
+        {
+            x_temp = x;
         }
 
-        // status 9 indicates integrator stepped inside separatrix limit
-        if((status == 9) || (p - p_sep < DIST_TO_SEPARATRIX))
+        double p_sep = 0.0;
+        if (params_holder->enforce_schwarz_sep || (a == 0.0))
+        {
+            p_sep = 6.0 + 2. * e;
+        }
+        else
+        {
+            p_sep = get_separatrix(a, e, x_temp);
+        }
+
+
+        if(p - p_sep < DIST_TO_SEPARATRIX)
         {
             // Issue with likelihood computation if this step ends at an arbitrary value inside separatrix + DIST_TO_SEPARATRIX.
             // To correct for this we self-integrate from the second-to-last point in the integation to
@@ -359,15 +314,13 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
                 if (params_holder->convert_Y)
                 {
                     x_temp = Y_to_xI(a, p, e, x);
-                    // if(sanity_check(a, p, e, x_temp)==1){
-                    // throw std::invalid_argument( "336 Wrong conversion to x_temp");
-                    // }
                 }
                 else
                 {
                     x_temp = x;
                 }
 
+                double p_sep = 0.0;
                 if (params_holder->enforce_schwarz_sep || (a == 0.0))
                 {
                     p_sep = 6.0 + 2. * e;
@@ -388,7 +341,9 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
                 double temp_Phi_theta = Phi_theta + Omega_theta * step_size;
                 double temp_Phi_r = Phi_r + Omega_r * step_size;
 
+
                 double temp_stop = temp_p - p_sep;
+
                 if (temp_stop > DIST_TO_SEPARATRIX)
                 {
                     // update points
@@ -439,20 +394,37 @@ InspiralHolder InspiralCarrier::run_inspiral(double t0, double M, double mu, dou
 
 	//	duration<double> time_span = duration_cast<duration<double> >(t2 - t1);
 
-    gsl_odeiv2_evolve_free (evolve);
-    gsl_odeiv2_control_free (control);
-    gsl_odeiv2_step_free (step);
-    //cout << "# Computing the inspiral took: " << time_span.count() << " seconds." << endl;
-	return inspiral_out;
+        gsl_odeiv2_evolve_free (evolve);
+        gsl_odeiv2_control_free (control);
+        gsl_odeiv2_step_free (step);
+		//cout << "# Computing the inspiral took: " << time_span.count() << " seconds." << endl;
+		return inspiral_out;
+
 }
 
-void InspiralCarrier::dealloc()
-{
-    delete[] params_holder->additional_args;
-    delete params_holder;
-}
+// wrapper for calling the Inspiral inspiral from cython/python
+void InspiralCarrier::InspiralWrapper(double *t, double *p, double *e, double *x, double *Phi_phi, double *Phi_theta, double *Phi_r, double M, double mu, double a, double p0, double e0, double x0, double Phi_phi0, double Phi_theta0, double Phi_r0, int *length, double tmax, double dt, double err, int DENSE_STEPPING, bool use_rk4, int init_len, double* additional_args){
 
-InspiralCarrier::~InspiralCarrier()
-{
-    return;
+	    double t0 = 0.0;
+        std::memcpy(params_holder->additional_args, additional_args, params_holder->num_add_args * sizeof(double));
+
+		InspiralHolder Inspiral_vals = run_Inspiral(t0, M, mu, a, p0, e0, x0, Phi_phi0, Phi_theta0, Phi_r0, err, tmax, dt, DENSE_STEPPING, use_rk4);
+
+        // make sure we have allocated enough memory through cython
+        if (Inspiral_vals.length > init_len){
+            throw std::runtime_error("Error: Initial length is too short. Inspiral requires more points. Need to raise max_init_len parameter for inspiral.\n");
+        }
+
+        // copy data
+		memcpy(t, &Inspiral_vals.t_arr[0], Inspiral_vals.length*sizeof(double));
+		memcpy(p, &Inspiral_vals.p_arr[0], Inspiral_vals.length*sizeof(double));
+		memcpy(e, &Inspiral_vals.e_arr[0], Inspiral_vals.length*sizeof(double));
+        memcpy(x, &Inspiral_vals.x_arr[0], Inspiral_vals.length*sizeof(double));
+		memcpy(Phi_phi, &Inspiral_vals.Phi_phi_arr[0], Inspiral_vals.length*sizeof(double));
+		memcpy(Phi_theta, &Inspiral_vals.Phi_theta_arr[0], Inspiral_vals.length*sizeof(double));
+        memcpy(Phi_r, &Inspiral_vals.Phi_r_arr[0], Inspiral_vals.length*sizeof(double));
+
+        // indicate how long is the trajectory
+		*length = Inspiral_vals.length;
+
 }
