@@ -339,17 +339,6 @@ Interp2DAmplitude_ext = Extension(
     **cpu_extension,
 )
 
-FLUX_ext = Extension(
-    "pyFLUX",
-    sources=[
-        "src/Interpolant.cc",
-        "src/Utility.cc",
-        "src/FluxInspiral.cc",
-        "src/FLUX.pyx",
-    ],
-    **cpu_extension,
-)
-
 inspiral_ext = Extension(
     "pyInspiral",
     sources=[
@@ -419,7 +408,6 @@ spher_harm_ext = Extension(
 
 cpu_extensions = [
     matmul_cpu_ext,
-    FLUX_ext,
     inspiral_ext,
     par_map_ext,
     interp_cpu_ext,
