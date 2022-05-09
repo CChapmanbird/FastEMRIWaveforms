@@ -245,7 +245,7 @@ with open(fp_out_name, "w") as fp_out:
                         continue
 
 # combine files for pn amp
-#os.system("cat src/temp_gather_hat_Zlmkn.c src/Zlmkn8_5PNe10_base.c > src/Zlmkn8_5PNe10.cu")
+os.system("cat src/temp_gather_hat_Zlmkn.c src/Zlmkn8_5PNe10_base.c > src/Zlmkn8_5PNe10.cu")
 
 # if installing for CUDA, build Cython extensions for gpu modules
 if run_cuda_install:
@@ -315,25 +315,8 @@ if run_cuda_install:
         "pygpuAAK", sources=["src/gpuAAK.cu", "src/gpuAAKWrap.pyx"], **gpu_extension
     )
 
-    gpu_extension_device = deepcopy(gpu_extension)
-    gpu_extension_device2 = deepcopy(gpu_extension)
-
-    gpu_extension_device["extra_compile_args"]["nvcc"] += ["-rdc=true", "-c"]
-
-    """pnAmp_ext1 = Extension(
-        "pypnamp1", sources=["src/hZ_2mkP0_5PNe10.cu"], **gpu_extension_device
-    )
-
-    pnAmp_ext2 = Extension(
-        "pypnamp2", sources=["src/Zlmkn8_5PNe10_base.cu"], **gpu_extension_device
-    )"""
-
-    #pnAmp_ext3 = Extension(
-    #    "pypnamp3", sources=["src/tempfile.cu"], extra_objects=["build/temp.linux-x86_64-3.9/src/Zlmkn8_5PNe10_base.o", "build/temp.linux-x86_64-3.9/src/hZ_2mkP0_5PNe10.o"], **gpu_extension_device2
-    #)
-
     pnAmp_ext = Extension(
-        "pypnamp", sources=["src/hZ_2mkP0_5PNe10.cu", "src/Zlmkn8_5PNe10_base.cu", "src/Utility.cc", "src/pypnampWrap.pyx", "zzzzzzzzzzzlink.cu"], **gpu_extension_device
+        "pypnamp", sources=["src/Utility.cc", "src/Zlmkn8_5PNe10.cu", "src/pypnampWrap.pyx"], **gpu_extension
     )
 
 # build all cpu modules
@@ -400,7 +383,7 @@ fund_freqs_ext = Extension(
 # also copy pyx files to cpu version
 src = "src/"
 
-cp_cu_files = ["matmul", "interpolate", "gpuAAK", "Zlmkn8_5PNe10_base", "hZ_2mkP0_5PNe10"]
+cp_cu_files = ["matmul", "interpolate", "gpuAAK", "Zlmkn8_5PNe10"]
 cp_pyx_files = ["pymatmul", "pyinterp", "gpuAAKWrap", "pypnampWrap"]
 
 for fp in cp_cu_files:
@@ -430,7 +413,7 @@ AAK_cpu_ext = Extension(
 )
 
 pnAmp_cpu_ext = Extension(
-        "pycpupnamp", sources=["src/Utility.cc", "src/hZ_2mkP0_5PNe10.cpp", "src/Zlmkn8_5PNe10_base.cpp", "src/pypnampWrap_cpu.pyx"], **cpu_extension
+        "pycpupnamp", sources=["src/Utility.cc", "src/Zlmkn8_5PNe10.cpp", "src/pypnampWrap_cpu.pyx"], **cpu_extension
     )
 
 
