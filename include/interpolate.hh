@@ -40,6 +40,6 @@ void get_waveform_generic_fd(cmplx *waveform,
 void get_waveform_generic(cmplx *waveform,
              double *interp_array,
               int *m_arr_in, int *k_arr_in, int *n_arr_in, int num_teuk_modes,
-              double delta_t, double *old_time_arr, int init_length, int data_length, int *interval_inds);
+              double delta_t, double *old_time_arr, int init_length, int data_length, int *interval_inds, bool separate_modes);
 
 #endif // __INTERP_H__
