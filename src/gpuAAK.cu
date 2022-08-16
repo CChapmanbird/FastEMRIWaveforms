@@ -421,14 +421,12 @@ void get_waveform(cmplx *waveform, double* interp_array,
               double delta_t, double *h_t){
 
     // arrays for determining spline windows for new arrays
-    int start_inds[init_len];
-    int unit_length[init_len-1];
-
-    int number_of_old_spline_points = init_len;
-
-    // find the spline window information based on equally spaced new array
-    find_start_inds(start_inds, unit_length, h_t, delta_t, &number_of_old_spline_points, out_len);
-
+    if (init_len > MAX_SPLINE_POINTS)
+    {
+      char str[1000];
+        sprintf(str, "Initial length is greater than the number of maximum allowable spline points: %d > %d", init_len, MAX_SPLINE_POINTS);
+        throw std::invalid_argument(str);
+    }
     #ifdef __CUDACC__
 
     // prepare streams for CUDA
