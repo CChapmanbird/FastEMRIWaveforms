@@ -86,7 +86,7 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
     {   
         cout << "ecc=" << e << endl;
         cout << "# Stepped into negative eccentricities. Circularizing the binary"<< endl;
-        return GSL_EBADFUNC;
+        return GSL_EBADFUNC+1;
     }
 
     // define a sanity check
@@ -326,7 +326,7 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
         }
 
         // cout << "line 298 " << status << " e= "<< e <<endl;
-        // if eccentricity is negative
+        /* if eccentricity is negative
         if((status == 9) && (p - p_sep > DIST_TO_SEPARATRIX))
         {
             if (circ>1){
@@ -433,9 +433,9 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
                 continue;
 
             }
-            
-            
         }
+        */
+        
         // status 9 indicates integrator stepped inside separatrix limit
         if((status == 9) || (p - p_sep < DIST_TO_SEPARATRIX))
         {
@@ -554,8 +554,7 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
         if (h < dt/1000){
             cout << "WARNING: The time step became 1000 times smaller than dt" << endl;
             cout << "status integrator = " << status << endl;
-
-            break;
+            // break;
         }
 
         prev_t = t;
