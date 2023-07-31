@@ -257,7 +257,7 @@ class NeuralModeSelector(ParallelModuleBase):
     def __init__(self, mode_ind_list, **kwargs):
         ParallelModuleBase.__init__(self, **kwargs)
 
-        self.precomputed_mask = np.load(dir_path+'modeselector_files/precomputed_mode_mask.npy')
+        self.precomputed_mask = np.load(dir_path+'/modeselector_files/precomputed_mode_mask.npy')
         self.base_mode_list = mode_ind_list[self.precomputed_mask]
 
         # we set the pytorch device here for use with the neural network
