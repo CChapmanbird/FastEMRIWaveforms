@@ -455,9 +455,9 @@ class SchwarzschildEccentricWaveformBase(
         self.mode_selector = ModeSelector(self.m0mask, **mode_selector_kwargs)
 
         if use_gpu:
-            neural_mode_list = [(lh, mh, nh) for lh in self.l_arr.get() for mh in self.m_arr.get() for nh in self.n_arr.get()]
+            neural_mode_list = [(lh, mh, nh) for lh, mh, nh in zip(self.l_arr.get(), self.m_arr.get(), self.n_arr.get())]
         else:
-            neural_mode_list = [(lh, mh, nh) for lh in self.l_arr for mh in self.m_arr for nh in self.n_arr]
+            neural_mode_list = [(lh, mh, nh) for lh, mh, nh in zip(self.l_arr, self.m_arr, self.n_arr)]
         self.neural_mode_selector = NeuralModeSelector(neural_mode_list, **mode_selector_kwargs)
 
         # setup amplitude normalization
@@ -475,7 +475,7 @@ class SchwarzschildEccentricWaveformBase(
         self.amp_norm_spline = RectBivariateSpline(
             np.unique(y_in), np.unique(e_in), norm.reshape(num_e, num_y).T
         )
-
+        print("intit")
     @property
     def citation(self):
         """Return citations related to this module"""
