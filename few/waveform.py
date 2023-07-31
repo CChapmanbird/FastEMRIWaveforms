@@ -35,7 +35,7 @@ from few.trajectory.inspiral import EMRIInspiral
 from few.amplitude.interp2dcubicspline import Interp2DAmplitude
 from few.utils.utility import get_mismatch, xI_to_Y, p_to_y, check_for_file_download
 from few.amplitude.romannet import RomanAmplitude
-from few.utils.modeselector import ModeSelector
+from few.utils.modeselector import ModeSelector, NeuralModeSelector
 from few.utils.ylm import GetYlms
 from few.summation.directmodesum import DirectModeSum
 from few.summation.aakwave import AAKSummation
@@ -454,6 +454,12 @@ class SchwarzschildEccentricWaveformBase(
         # selecting modes that contribute at threshold to the waveform
         self.mode_selector = ModeSelector(self.m0mask, **mode_selector_kwargs)
 
+        if use_gpu:
+            neural_mode_list = [(lh, mh, nh) for lh in self.l_arr.get() for mh in self.m_arr.get() for nh in self.n_arr.get()]
+        else:
+            neural_mode_list = [(lh, mh, nh) for lh in self.l_arr for mh in self.m_arr for nh in self.n_arr]
+        self.neural_mode_selector = NeuralModeSelector(neural_mode_list, **mode_selector_kwargs)
+
         # setup amplitude normalization
         fp = "AmplitudeVectorNorm.dat"
         few_dir = dir_path + "/../"
@@ -602,6 +608,12 @@ class SchwarzschildEccentricWaveformBase(
         ylms = self.ylm_gen(self.unique_l, self.unique_m, theta, phi).copy()[
             self.inverse_lm
         ]
+
+        # use the neural network mode selector
+        # we do this now so we can avoid generating amplitudes that are not required
+        if mode_selection == "neural":
+            # overwrites mode_selection so it's now a list of modes to keep, ready to feed into amplitudes
+            mode_selection = self.neural_mode_selector(M, mu, p0, e0, theta, phi, T, eps)
 
         # split into batches
 
