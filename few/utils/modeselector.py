@@ -18,6 +18,8 @@
 
 import numpy as np
 
+import os
+
 from few.utils.citations import *
 from few.utils.utility import get_fundamental_frequencies
 from few.utils.constants import *
@@ -30,6 +32,7 @@ try:
 except (ImportError, ModuleNotFoundError) as e:
     import numpy as np
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class ModeSelector(ParallelModuleBase):
     """Filter teukolsky amplitudes based on power contribution.
@@ -229,3 +232,108 @@ class ModeSelector(ParallelModuleBase):
         out2 = tuple([arr[keep_modes] for arr in modeinds])
 
         return out1 + out2
+
+class NeuralModeSelector(ParallelModuleBase):
+    """Filter teukolsky amplitudes based on power contribution.
+
+    This module uses a combination of a pre-computed mask and a feed-forward neural
+    network to predict the mode content of the waveform given its parameters. Therefore,
+    the results will vary compared to manually computing the mode selection, but it should be
+    very accurate especially for the stronger modes.
+
+    The mode filtering is a major contributing factor to the speed of these
+    waveforms as it removes large numbers of useles modes from the final
+    summation calculation.
+
+    args:
+        mode_ind_list (list): A list of all sets of mode indices, in order. The pre-computed mask
+            will be applied to this list, and the result will be further reduced for output upon
+            evaluation of the mode selector.
+        **kwargs (dict, optional): Keyword arguments for the base classes:
+            :class:`few.utils.baseclasses.ParallelModuleBase`.
+            Default is {}.
+    """
+
+    def __init__(self, mode_ind_list, **kwargs):
+        ParallelModuleBase.__init__(self, **kwargs)
+
+        self.precomputed_mask = np.load(dir_path+'modeselector_files/precomputed_mode_mask.npy')
+        self.base_mode_list = mode_ind_list[self.precomputed_mask]
+
+        # we set the pytorch device here for use with the neural network
+        if self.use_gpu:
+            xp = cp
+            self.device=f"cuda:{cp.cuda.runtime.getDevice()}"
+        else:
+            xp = np
+            self.device="cpu"
+        # if torch doesn't import properly, raise
+        import torch
+        # if torch wasn't installed with GPU capability, raise
+        if self.use_gpu and not torch.cuda.is_available():
+            raise RuntimeError("pytorch has not been installed with CUDA capability. Fix installation or set use_gpu=False.")
+        
+        try:
+            self.load_model(dir_path+"modeselector_files/mode_model.pt")  # TODO fix path
+        except FileNotFoundError:
+            raise FileNotFoundError("Model file not found. Check it's in the directory.")
+
+    @property
+    def gpu_capability(self):
+        """Confirms GPU capability"""
+        return True
+
+    def attributes_ModeSelector(self):
+        """
+        attributes:
+            xp: cupy or numpy depending on GPU usage.
+
+        """
+        pass
+
+    @property
+    def citation(self):
+        """Return citations related to this class."""
+        return larger_few_citation + few_citation + few_software_citation
+
+    def load_model(self, fp):
+        self.model = torch.load(fp)
+        self.model.to(self.device)
+        self.model.eval()
+    
+    def __call__(self, M, mu, p0, e0, theta, phi, T, eps, threshold=0.5):
+        """Call to predict the mode content of the waveform.
+
+        This is the call function that takes the waveform parameters, applies a 
+        precomputed mask and then evaluates the remaining mode content with a
+        neural network classifier. 
+
+        args:
+            M (double): Mass of larger black hole in solar masses.
+            mu (double): Mass of compact object in solar masses.
+            p0 (double): Initial semilatus rectum (Must be greater than
+                the separatrix at the the given e0 and x0).
+                See documentation for more information on :math:`p_0<10`.
+            e0 (double): Initial eccentricity.
+            theta (double): Polar viewing angle.
+            phi (double): Azimuthal viewing angle.
+            T (double): Duration of waveform in years.
+            eps (double): Mode selection threshold power.
+            threshold (double): The network threshold value for mode retention. Decrease to keep more modes,
+                minimising missed modes but slowing down the waveform computation. Defaults to 0.5 (the optimal value for accuracy).
+        """
+
+        #wrap angles to training bounds
+        phi = phi % (2*np.pi)
+        theta = theta % (np.pi) - np.pi
+
+        # no rescaling for now, just some functions.
+        inps = torch.as_tensor([xp.log(M), mu, p0, e0, T, theta, phi, xp.log10(eps)], device=self.device)
+
+        with torch.inference_mode():
+            mode_predictions = self.model(inps)
+            # mode_predictions[mode_predictions > threshold] = 1
+            # mode_predictions[mode_predictions < threshold] = 0
+            keep_inds = torch.where(mode_predictions > threshold).int().cpu().numpy()
+        selected_modes = [self.base_mode_list[ind] for ind in keep_inds]
+        return selected_modes
