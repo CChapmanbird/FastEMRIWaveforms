@@ -254,7 +254,7 @@ class NeuralModeSelector(ParallelModuleBase):
             Default is {}.
     """
 
-    def __init__(self, mode_ind_list, **kwargs):
+    def __init__(self, mode_ind_list, threshold=0.5, **kwargs):
         ParallelModuleBase.__init__(self, **kwargs)
 
         self.precomputed_mask = np.load(dir_path+'/modeselector_files/precomputed_mode_mask.npy')
@@ -262,21 +262,26 @@ class NeuralModeSelector(ParallelModuleBase):
 
         # we set the pytorch device here for use with the neural network
         if self.use_gpu:
-            xp = cp
+            self.xp = cp
             self.device=f"cuda:{cp.cuda.runtime.getDevice()}"
         else:
-            xp = np
+            self.xp = np
             self.device="cpu"
+
+        # import torch here in case users don't want it otherwise
         # if torch doesn't import properly, raise
         import torch
+        self.torch = torch
         # if torch wasn't installed with GPU capability, raise
         if self.use_gpu and not torch.cuda.is_available():
             raise RuntimeError("pytorch has not been installed with CUDA capability. Fix installation or set use_gpu=False.")
         
         try:
-            self.load_model(dir_path+"modeselector_files/mode_model.pt")  # TODO fix path
+            self.load_model(dir_path+"/modeselector_files/jitted_model.tjm")  # TODO fix path
         except FileNotFoundError:
             raise FileNotFoundError("Model file not found. Check it's in the directory.")
+
+        self.threshold = threshold
 
     @property
     def gpu_capability(self):
@@ -297,11 +302,11 @@ class NeuralModeSelector(ParallelModuleBase):
         return larger_few_citation + few_citation + few_software_citation
 
     def load_model(self, fp):
-        self.model = torch.load(fp)
+        self.model = self.torch.jit.load(fp)
         self.model.to(self.device)
         self.model.eval()
     
-    def __call__(self, M, mu, p0, e0, theta, phi, T, eps, threshold=0.5):
+    def __call__(self, M, mu, p0, e0, theta, phi, T, eps):
         """Call to predict the mode content of the waveform.
 
         This is the call function that takes the waveform parameters, applies a 
@@ -328,12 +333,98 @@ class NeuralModeSelector(ParallelModuleBase):
         theta = theta % (np.pi) - np.pi
 
         # no rescaling for now, just some functions.
-        inps = torch.as_tensor([xp.log(M), mu, p0, e0, T, theta, phi, xp.log10(eps)], device=self.device)
+        inps = self.torch.as_tensor([np.log(M), mu, p0, e0, T, theta, phi, np.log10(eps)], device=self.device).float()
 
-        with torch.inference_mode():
+        with self.torch.inference_mode():
             mode_predictions = self.model(inps)
             # mode_predictions[mode_predictions > threshold] = 1
             # mode_predictions[mode_predictions < threshold] = 0
-            keep_inds = torch.where(mode_predictions > threshold).int().cpu().numpy()
+            keep_inds = self.torch.where(mode_predictions > self.threshold)[0].int().cpu().numpy()
         selected_modes = [self.base_mode_list[ind] for ind in keep_inds]
         return selected_modes
+
+# import torch.nn as nn
+# import torch
+
+# class LinearModel(nn.Module):
+#     """LinearModel class implementing a standard multi-layer perceptron with some convenience features for function approximation use. 
+
+#     This is a subclass of `torch.nn.Module`.
+
+#     Parameters
+#     ----------
+#     in_features : int
+#         Number of features for the input layer of the model.
+#     out_features : int
+#         Number of features for the output layer of the model.
+#     neurons : list
+#             A list containing the number of neurons in each layer of the model (excluding input/output).
+#     activation : Any
+#         The activation function to be used for each hidden layer.
+#     name : str, optional
+#         A name for the model, used for file naming. Defaults to "model".
+#     device : str, optional
+#         pytorch device to initialise the model to, by default "cpu"
+#     rescaler : _type_, optional
+#         An object for rescaling inputs/outputs. by default `IdentityRescaler` (see `mlsel.nn.rescaling.py` for examples)
+#     out_activation : _type_, optional
+#         Activation function for the output layer, by default None
+#     initialisation : _type_, optional
+#         Function for setting the initial weights of all neurons, by default uses xavier_uniform rescaling
+#     dropout : float, optional
+#         Sets the dropout probability for all layers, by default 0 (no dropout).
+#     batch_norm : bool, optional
+#         If True, enables batch normalisation between layers, by default False
+#     """
+#     def __init__(self, in_features, out_features, neurons, activation, out_activation=None, initialisation=None, dropout=0., batch_norm=False):
+#         super().__init__()
+            
+#         self.initial = initialisation
+
+#         if initialisation is None:
+#             initialisation = nn.init.xavier_uniform_
+#         self.initialisation = initialisation
+
+#         n_layers = len(neurons)
+
+#         layers = [nn.Linear(in_features, neurons[0]), activation()]
+#         for i in range(0, n_layers-1):
+#             layers.append(nn.Linear(neurons[i], neurons[i+1]))
+#             if dropout:
+#                 layers.append(nn.Dropout(dropout))  
+#             layers.append(activation())
+#             if batch_norm:
+#                 layers.append(nn.BatchNorm1d(num_features=neurons[i]))
+                
+#         layers.append(nn.Linear(neurons[-1], out_features))
+#         if out_activation is not None:
+#             layers.append(out_activation())
+        
+#         self.layers = nn.Sequential(*layers)
+#         self.layers.apply(self._init_weights)
+
+#     def forward(self, x: torch.Tensor):
+#         """Computes the output for a set of inputs, and removes extra dimensions in the output.
+
+#         Parameters
+#         ----------
+#         x : torch.Tensor
+#             The input tensor to the model.
+
+#         Returns
+#         -------
+#         torch.Tensor
+#             The resulting output tensor, with no dimensions of size 1.
+#         """
+#         return torch.squeeze(self.layers(x))
+
+#     def _init_weights(self, m):
+#         """Initialise the neural network weights
+
+#         Parameters
+#         ----------
+#         m : Any
+#             A network component to be set, if it is a nn.Linear instance.
+#         """
+#         if isinstance(m, nn.Linear):
+#             self.initialisation(m.weight)
