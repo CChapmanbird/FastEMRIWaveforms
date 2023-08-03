@@ -109,7 +109,6 @@ class Interp2DAmplitude(AmplitudeBase, SchwarzschildEccentric):
 
 
         """
-
         input_len = len(p)
 
         # set the l,m,n arrays
@@ -121,6 +120,7 @@ class Interp2DAmplitude(AmplitudeBase, SchwarzschildEccentric):
                 self.n_arr[self.m_zero_up_mask],
             )
             try:  # move to CPU if needed before feeding in
+                p, e = p.get(), e.get()
                 l_arr, m_arr, n_arr = l_arr.get(), m_arr.get(), n_arr.get()
             except AttributeError:
                 pass
