@@ -249,6 +249,9 @@ class NeuralModeSelector(ParallelModuleBase):
         mode_ind_list (list): A list of all sets of mode indices, in order. The pre-computed mask
             will be applied to this list, and the result will be further reduced for output upon
             evaluation of the mode selector.
+        threshold (double): The network threshold value for mode retention. Decrease to keep more modes,
+            minimising missed modes but slowing down the waveform computation. Defaults to 0.5 (the optimal value for accuracy).
+
         **kwargs (dict, optional): Keyword arguments for the base classes:
             :class:`few.utils.baseclasses.ParallelModuleBase`.
             Default is {}.
@@ -277,11 +280,13 @@ class NeuralModeSelector(ParallelModuleBase):
             raise RuntimeError("pytorch has not been installed with CUDA capability. Fix installation or set use_gpu=False.")
         
         try:
-            self.load_model(dir_path+"/modeselector_files/jitted_model.tjm")  # TODO fix path
+            self.load_model(dir_path+"/modeselector_files/neural_mode_selector.tjm")
         except FileNotFoundError:
-            raise FileNotFoundError("Model file not found. Check it's in the directory.")
+            raise FileNotFoundError("Neural mode predictor model file not found. ")
 
         self.threshold = threshold
+        self.vector_min = np.load(dir_path+"/modeselector_files/vector_min.npy")
+        self.vector_max = np.load(dir_path+"/modeselector_files/vector_max.npy")
 
     @property
     def gpu_capability(self):
@@ -292,7 +297,11 @@ class NeuralModeSelector(ParallelModuleBase):
         """
         attributes:
             xp: cupy or numpy depending on GPU usage.
-
+            torch: pytorch module.
+            device: The pytorch device currently in use: should agree with what is set by cupy.
+            threshold: network evaluation threshold for keeping/discarding modes.
+            vector_min: minimum bounds of the training data, for rescaling.
+            vector_max: maximum bounds of the training data, for rescaling.
         """
         pass
 
@@ -302,7 +311,7 @@ class NeuralModeSelector(ParallelModuleBase):
         return larger_few_citation + few_citation + few_software_citation
 
     def load_model(self, fp):
-        self.model = self.torch.jit.load(fp)
+        self.model = self.torch.jit.load(fp)  # assume the model has been jit compiled
         self.model.to(self.device)
         self.model.eval()
     
@@ -324,21 +333,36 @@ class NeuralModeSelector(ParallelModuleBase):
             phi (double): Azimuthal viewing angle.
             T (double): Duration of waveform in years.
             eps (double): Mode selection threshold power.
-            threshold (double): The network threshold value for mode retention. Decrease to keep more modes,
-                minimising missed modes but slowing down the waveform computation. Defaults to 0.5 (the optimal value for accuracy).
         """
 
         #wrap angles to training bounds
         phi = phi % (2*np.pi)
         theta = theta % (np.pi) - np.pi
 
-        # no rescaling for now, just some functions.
-        inps = self.torch.as_tensor([np.log(M), mu, p0, e0, T, theta, phi, np.log10(eps)], device=self.device).float()
+        # rather than let the network extrapolate we can shift things to the boundary of the training data
+        # M, mu, e0, T, eps = self.cap_inputs(M, mu, e0, T, eps)
 
+        inputs = np.array([[np.log(M), mu, p0, e0, T, theta, phi, np.log10(eps)]])
+        # rescale network input from pre-computed
+        inputs = 2 * (inputs - self.vector_min) / (self.vector_max - self.vector_min) - 1
+        inputs = self.torch.as_tensor(inputs, device=self.device).float() 
+        # get network output and threshold it based on the defined value
         with self.torch.inference_mode():
-            mode_predictions = self.model(inps)
-            # mode_predictions[mode_predictions > threshold] = 1
-            # mode_predictions[mode_predictions < threshold] = 0
+            mode_predictions = self.model(inputs)
             keep_inds = self.torch.where(mode_predictions > self.threshold)[0].int().cpu().numpy()
+        # return list of modes for kept indices
         selected_modes = [self.base_mode_list[ind] for ind in keep_inds]
         return selected_modes
+
+    def cap_inputs(self, M, mu, e0, T, eps):
+        e0 = min(e0, 0.7)
+        e0 = max(e0, 0.05)
+        M = min(M, 1e7)
+        M = max(M, 1e5)
+        mu = min(mu, 100)
+        mu = max(mu, 1)
+        T = min(T, 4)
+        T = max(T, 0.01)
+        eps = min(eps, 1e-1)
+        eps = max(eps, 5e-6)
+        return M, mu, e0, T, eps
