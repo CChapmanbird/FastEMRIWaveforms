@@ -356,7 +356,7 @@ class SchwarzschildEccentric(ParallelModuleBase, ABC):
         return (theta, phi)
 
     def sanity_check_traj(self, p, e):
-        """Sanity check on parameters output from thte trajectory module.
+        """Sanity check on parameters output from the trajectory module.
 
         Make sure parameters are within allowable ranges.
 
