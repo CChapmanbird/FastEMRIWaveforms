@@ -2,7 +2,7 @@ import numpy as np
 cimport numpy as np
 from libcpp cimport bool
 
-from few.utils.utility import wrapper
+from few.utils.utility import pointer_adjust
 
 assert sizeof(int) == sizeof(np.int32_t)
 
@@ -13,13 +13,6 @@ cdef extern from "interpolate.hh":
     void get_waveform(cmplx *d_waveform, double *interp_array,
                   int *d_m, int *d_n, int init_len, int out_len, int num_teuk_modes, cmplx *d_Ylms,
                   double delta_t, double *h_t, int dev)
-   
-    void get_waveform_generic_fd(cmplx *waveform,
-             double *interp_array,
-              int *m_arr_in, int *k_arr_in, int *n_arr_in, int num_teuk_modes,
-              double delta_t, double *old_time_arr, int init_length, int data_length,
-              double *frequencies, int *mode_start_inds, int *mode_end_inds, int num_segments, cmplx *Ylm_all, int zero_index,
-              bool include_minus_m, bool separate_modes);
 
     void get_waveform_generic(cmplx *waveform,
              double *interp_array,
@@ -32,11 +25,8 @@ cdef extern from "interpolate.hh":
               double delta_t, double start_t, double *old_time_arr, int init_length, int data_length, int *interval_inds, bool separate_modes, int num_windows, int num_per_window, int inds_left_right, int freq_length, bool include_L);
 
 
-def interpolate_arrays_wrap(*args, **kwargs):
-
-    targs, kwargs = wrapper(*args, **kwargs)
-
-    t_arr, interp_array, ninterps, length, B, upper_diag, diag, lower_diag = targs
+@pointer_adjust
+def interpolate_arrays_wrap(t_arr, interp_array, ninterps, length, B, upper_diag, diag, lower_diag):
 
     cdef size_t t_arr_in = t_arr
     cdef size_t interp_array_in = interp_array
@@ -47,14 +37,10 @@ def interpolate_arrays_wrap(*args, **kwargs):
 
     interpolate_arrays(<double *>t_arr_in, <double *>interp_array_in, ninterps, length, <double *>B_in, <double *>upper_diag_in, <double *>diag_in, <double *>lower_diag_in)
 
-
-def get_waveform_wrap(*args, **kwargs):
-
-    targs, kwargs = wrapper(*args, **kwargs)
-
-    (d_waveform, interp_array,
+@pointer_adjust
+def get_waveform_wrap(d_waveform, interp_array,
               d_m, d_n, init_len, out_len, num_teuk_modes, d_Ylms,
-              delta_t, h_t, dev) = targs
+              delta_t, h_t, dev):
 
     cdef size_t d_waveform_in = d_waveform
     cdef size_t interp_array_in = interp_array

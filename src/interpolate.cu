@@ -182,19 +182,29 @@ void set_spline_constants(double *t_arr, double *interp_array, double *B,
   int end2 = length - 1;
   int diff2 = 1;
 
-    #pragma omp parallel for
-    #endif
-    for (int interp_i= start1;
-         interp_i<end1; // 2 for re and im
-         interp_i+= diff1)
-         {
 
 #endif // __CUDACC__
 
-                int lead_ind = interp_i*length;
-                prep_splines(i, length, &B[lead_ind], &upper_diag[lead_ind], &diag[lead_ind], &lower_diag[lead_ind], &t_arr[lead_ind], &y_all[interp_i*length]);
-            }
-        }
+  for (int interp_i = start1;
+       interp_i < end1; // 2 for re and im
+       interp_i += diff1)
+  {
+
+    for (int i = start2;
+         i < end2;
+         i += diff2)
+    {
+
+      dt = t_arr[interp_i * length + i + 1] - t_arr[interp_i * length + i];
+
+      int lead_ind = interp_i * length;
+      fill_coefficients(i, length, &B[lead_ind], dt,
+                        &interp_array[0 * ninterps * length + lead_ind],
+                        &interp_array[1 * ninterps * length + lead_ind],
+                        &interp_array[2 * ninterps * length + lead_ind],
+                        &interp_array[3 * ninterps * length + lead_ind]);
+    }
+  }
 }
 
 // wrapper for cusparse solution for coefficients from banded matrix
@@ -245,22 +255,13 @@ void fill_final_derivs(double *t_arr, double *interp_array,
     #ifdef __CUDACC__
     int start1 = blockIdx.x*blockDim.x + threadIdx.x;
     int end1 = ninterps;
-    int diff1 = blockDim.y*gridDim.y;
-
-    int start2 = blockIdx.x*blockDim.x + threadIdx.x;
-    int end2 = length - 1;
-    int diff2 = blockDim.x * gridDim.x;
+    int diff1 = blockDim.x * gridDim.x;
     #else
 
     int start1 = 0;
     int end1 = ninterps;
     int diff1 = 1;
 
-    int start2 = 0;
-    int end2 = length - 1;
-    int diff2 = 1;
-
-    #pragma omp parallel for
     #endif
 
     for (int interp_i= start1;
@@ -273,7 +274,13 @@ void fill_final_derivs(double *t_arr, double *interp_array,
             double c2 = interp_array[(2 * ninterps +  interp_i) * length + length - 2];
             double c3 = interp_array[(3 * ninterps +  interp_i) * length + length - 2];
 
-              dt = t_arr[interp_i * length + i + 1] - t_arr[interp_i * length + i];
+            double t_begin = t_arr[interp_i * length + length - 2];
+            double t_end = t_arr[interp_i * length + length - 1];
+            double x = t_end - t_begin;
+            double x2 = x * x;
+            double final_c1 = c1 + 2 * c2 * x + 3 * c3 * x2;
+            double final_c2 = (2. * c2 + 6. * c3 * x)/2.;
+            double final_c3 = c3;
 
             interp_array[(1 * ninterps +  interp_i) * length + length - 1] = c1;
             interp_array[(2 * ninterps +  interp_i) * length + length - 1] = c2;
@@ -281,6 +288,7 @@ void fill_final_derivs(double *t_arr, double *interp_array,
 
         }
 }
+
 
 // interpolate many y arrays (interp_array) with a singular x array (t_arr)
 // see python documentation for shape necessary for this to be done
@@ -543,15 +551,6 @@ void make_waveform(cmplx *waveform,
     for (int i=start; i<end; i+=diff)
     {
 
-        // fill mode values and Ylms
-        int ind_re = old_ind*(2*num_teuk_modes+num_pars) + (init_ind + i);
-        int ind_im = old_ind*(2*num_teuk_modes+num_pars)  + num_teuk_modes + (init_ind + i);
-        mode_re_y[i] = interp_array[0 * num_base + ind_re]; mode_re_c1[i] = interp_array[1 * num_base + ind_re];
-        mode_re_c2[i] = interp_array[2 * num_base + ind_re]; mode_re_c3[i] = interp_array[3 * num_base + ind_re];
-
-        mode_im_y[i] = interp_array[0 * num_base + ind_im]; mode_im_c1[i] = interp_array[1 * num_base + ind_im];
-        mode_im_c2[i] = interp_array[2 * num_base + ind_im]; mode_im_c3[i] = interp_array[3 * num_base + ind_im];
-
       // fill mode values and Ylms
       int ind_re = old_ind * (2 * num_teuk_modes + num_pars) + (init_ind + i);
       int ind_im = old_ind * (2 * num_teuk_modes + num_pars) + num_teuk_modes + (init_ind + i);
@@ -623,11 +622,8 @@ void make_waveform(cmplx *waveform,
         fod phase = m * Phi_phi_i + n * Phi_r_i;
         partial_mode = mode_val * gcmplx::exp(minus_I * phase);
 
-                // minus m if m > 0
-                // mode values for +/- m are taking care of when applying
-                //specific mode selection by setting ylms to zero for the opposites
-                if (m != 0)
-                {
+
+        trans_plus_m = partial_mode * Ylm_plus_m;
 
         // minus m if m > 0
         // mode values for +/- m are taking care of when applying
@@ -1437,14 +1433,16 @@ void get_waveform_generic_fd(cmplx *waveform,
       
       #else
 
-      #ifdef __USE_OMP__
-      #pragma omp parallel for
-      #endif
-      for (int i = 0; i < number_of_old_spline_points-1; i++) {
-            //destroy the streams
-            cudaStreamDestroy(streams[i]);
-        }
-      #endif
+         // CPU waveform generation
+         make_generic_kerr_waveform_fd(waveform,
+             interp_array,
+              m_arr_in, k_arr_in, n_arr_in, num_teuk_modes,
+              delta_t, old_time_arr, init_length, data_length,
+              frequencies, seg_start_inds, seg_end_inds, num_segments,
+              Ylm_all, zero_index, include_minus_m, separate_modes);
+         
+        #endif
+
 }
 
 
@@ -2168,4 +2166,3 @@ void get_waveform_tf_generic(cmplx *waveform,
         #endif
 
 }
-

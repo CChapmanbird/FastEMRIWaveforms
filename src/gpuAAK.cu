@@ -66,13 +66,6 @@ void d_RotCoeff(double* rot, double* n, double* L, double* S, double* nxL, doubl
 }
 
 #define  NUM_PARS 8
-
-#ifdef __CUDACC__
-#define MAX_SPLINE_POINTS 160
-#else
-#define MAX_SPLINE_POINTS 10000
-#endif
-
 CUDA_KERNEL
 void make_waveform(cmplx *waveform,
               double* interp_array,
@@ -112,11 +105,7 @@ void make_waveform(cmplx *waveform,
       start = 0;
       end = 4 * NUM_PARS;
       increment = 1;
-
-#ifdef __USE_OMP__
-      #pragma omp parallel for
-#endif  // __USE_OMP__
-#endif // __CUDACC__
+      #endif // __CUDACC__
 
        // prepare interpolants
       // 8 parameters, 4 coefficient values for each parameter
@@ -194,10 +183,7 @@ void make_waveform(cmplx *waveform,
       end = end_ind;
       increment = 1;
 
-#ifdef __USE_OMP__
-      #pragma omp parallel for
-#endif  // __USE_OMP__
-#endif // __CUDACC__
+      #endif
       for (int i = start; i < end; i += increment)
       {
 
@@ -428,12 +414,14 @@ void get_waveform(cmplx *waveform, double* interp_array,
               double delta_t, double *h_t){
 
     // arrays for determining spline windows for new arrays
-    if (init_len > MAX_SPLINE_POINTS)
-    {
-        char str[1000];
-        sprintf(str, "Initial length is greater than the number of maximum allowable spline points: %d > %d", init_len, MAX_SPLINE_POINTS);
-        throw std::invalid_argument(str);
-    }
+    int start_inds[init_len];
+    int unit_length[init_len-1];
+
+    int number_of_old_spline_points = init_len;
+
+    // find the spline window information based on equally spaced new array
+    find_start_inds(start_inds, unit_length, h_t, delta_t, &number_of_old_spline_points, out_len);
+
     #ifdef __CUDACC__
 
     // prepare streams for CUDA
@@ -441,9 +429,6 @@ void get_waveform(cmplx *waveform, double* interp_array,
 
     #endif
 
-    #ifdef __USE_OMP__
-    #pragma omp parallel for
-    #endif
     for (int i = 0; i < number_of_old_spline_points-1; i++) {
           #ifdef __CUDACC__
 
@@ -479,9 +464,6 @@ void get_waveform(cmplx *waveform, double* interp_array,
       cudaDeviceSynchronize();
       gpuErrchk(cudaGetLastError());
 
-      #ifdef __USE_OMP__
-      #pragma omp parallel for
-      #endif
       for (int i = 0; i < number_of_old_spline_points-1; i++) {
             //destroy the streams
             cudaStreamDestroy(streams[i]);
