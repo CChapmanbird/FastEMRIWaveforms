@@ -1,14 +1,18 @@
 #ifndef __FUND_FREQS__
 #define __FUND_FREQS__
 
-void throw_python_error(char* str_in, int status);
-
 int sanity_check(double a, double p, double e, double Y);
 
 void KerrGeoMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, double* CapitalUpsilonTheta_, double* CapitalUpsilonr_,
                               double a, double p, double e, double x);
 
 void KerrGeoCoordinateFrequencies(double* OmegaPhi_, double* OmegaTheta_, double* OmegaR_,
+                            double a, double p, double e, double x);
+
+void KerrGeoEquatorialMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, double* CapitalUpsilonTheta_, double* CapitalUpsilonr_,
+                              double a, double p, double e, double x);
+
+void KerrGeoEquatorialCoordinateFrequencies(double* OmegaPhi_, double* OmegaTheta_, double* OmegaR_,
                             double a, double p, double e, double x);
 
 void KerrGeoCoordinateFrequenciesVectorized(double* OmegaPhi_, double* OmegaTheta_, double* OmegaR_,
@@ -19,7 +23,7 @@ void KerrEqSpinFrequenciesCorrVectorized(double* OmegaPhi_, double* OmegaTheta_,
 
 void KerrEqSpinFrequenciesCorrection(double* deltaOmegaR_, double* deltaOmegaPhi_,
                               double a, double p, double e, double x);
-
+void KerrScott(double* OmegaPhi_, double* OmegaTheta_, double* OmegaR_,double a, double p, double e, double xI);
 void SchwarzschildGeoCoordinateFrequencies(double* OmegaPhi, double* OmegaR, double p, double e);
 
 double get_separatrix(double a, double e, double x);

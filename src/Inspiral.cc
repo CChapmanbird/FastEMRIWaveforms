@@ -59,7 +59,7 @@ using namespace std::chrono;
 
 #define  ERROR_INSIDE_SEP  21
 
-#define DIST_TO_SEPARATRIX 0.2
+#define DIST_TO_SEPARATRIX 0.1
 #define INNER_THRESHOLD 1e-8
 #define PERCENT_STEP 0.25
 #define MAX_ITER 1000
@@ -81,9 +81,6 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
     double x_temp;
 
     // define a sanity check
-    if(sanity_check(a, p, e, x)==1){
-        return GSL_EBADFUNC;
-    }
     // if(sanity_check(a, p, e, x)==1){
     //     return GSL_EBADFUNC;
     // }
@@ -126,7 +123,8 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
     params_in->func->get_derivatives(&pdot, &edot, &xdot,
                          &Omega_phi, &Omega_theta, &Omega_r,
                          epsilon, a, p, e, x, params_in->additional_args);
-
+    
+    // cout << "e=" << e << "\t" << "edot=" << edot <<  "\t" << "p=" << p <<  endl;
     f[0] = pdot;
 	f[1] = edot;
     f[2] = xdot;
@@ -223,13 +221,14 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
         // or do interpolated step
 		if(DENSE_STEPPING) status = gsl_odeiv2_evolve_apply_fixed_step (evolve, control, step, &sys, &t, h, y);
         else status = gsl_odeiv2_evolve_apply (evolve, control, step, &sys, &t, t1, &h, y);
-
+        
       	if ((status != GSL_SUCCESS) && (status != 9) && (status != -1)){
        		printf ("error, return value=%d\n", status);
           	break;
         }
         // if status is 9 meaning inside the separatrix
         // or if any quantity is nan, step back and take a smaller step.
+        
         else if ((std::isnan(y[0]))||(std::isnan(y[1]))||(std::isnan(y[2])) ||(std::isnan(y[3]))||(std::isnan(y[4]))||(std::isnan(y[5])))
         {
             ///printf("checkit error %.18e %.18e %.18e %.18e \n", y[0], y_prev[0], y[1], y_prev[1]);
@@ -257,13 +256,13 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
             continue;
         }
 
-
+        
         if (status==-1){
             // cout << "e=" << y[1] << "\t" << y_prev[1] << endl;
             gsl_odeiv2_step_reset(step);
             gsl_odeiv2_evolve_reset(evolve);
 
-             // go back to previous points
+            // go back to previous points
             #pragma unroll
             for (int i = 0; i < 6; i += 1)
             {
@@ -282,7 +281,7 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
             y[1] = 1e-9;
             break;
         }
-
+        
 
         // if it made it here, reset bad num
         bad_num = 0;
@@ -290,14 +289,10 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
         double p 		= y[0];
         double e 		= y[1];
         double x        = y[2];
-        
+
         // should not be needed but is safeguard against stepping past maximum allowable time
         // the last point in the trajectory will be at t = tmax
         if (t > tmax) break;
-
-        double p 		= y[0];
-        double e 		= y[1];
-        double x        = y[2];
 
         // count the number of points
         ind++;
@@ -469,7 +464,7 @@ void InspiralCarrier::InspiralWrapper(double *t, double *p, double *e, double *x
 
         // make sure we have allocated enough memory through cython
         if (Inspiral_vals.length > init_len){
-            throw std::invalid_argument("Error: Initial length is too short. Inspiral requires more points. Need to raise max_init_len parameter for inspiral. Inspiral.cc \n");
+            throw std::invalid_argument("Error: Initial length is too short. Inspiral requires more points. Need to raise max_init_len parameter for inspiral.\n");
             // throw std::runtime_error("Error: Initial length is too short. Inspiral requires more points. Need to raise max_init_len parameter for inspiral.\n");
         }
 
