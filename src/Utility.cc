@@ -242,7 +242,7 @@ void KerrGeoMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, d
     *CapitalUpsilonr_ = CapitalUpsilonr;
 }
 
-void KerrEqGeoMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, double* CapitalUpsilonTheta_, double* CapitalUpsilonr_,
+void KerrCircularMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, double* CapitalUpsilonTheta_, double* CapitalUpsilonr_,
                               double a, double p, double e, double x)
 {
     double CapitalUpsilonr = sqrt((p*(-2*pow(a,2) + 6*a*sqrt(p) + (-5 + p)*p + (pow(a - sqrt(p),2)*(pow(a,2) - 4*a*sqrt(p) - (-4 + p)*p))/abs(pow(a,2) - 4*a*sqrt(p) - (-4 + p)*p)))/(2*a*sqrt(p) + (-3 + p)*p));
@@ -262,21 +262,81 @@ void KerrGeoCoordinateFrequencies(double* OmegaPhi_, double* OmegaTheta_, double
 {
     // printf("here p e %f %f %f %f \n", a, p, e, x);
     double CapitalGamma, CapitalUpsilonPhi, CapitalUpsilonTheta, CapitalUpsilonR;
-    // if (abs(x)==1.0){
-    //     KerrEqGeoMinoFrequencies(&CapitalGamma, &CapitalUpsilonPhi, &CapitalUpsilonTheta, &CapitalUpsilonR,
-    //                               a, p, e, x);
-    // }
-    // else{
-        KerrGeoMinoFrequencies(&CapitalGamma, &CapitalUpsilonPhi, &CapitalUpsilonTheta, &CapitalUpsilonR,
+
+    KerrGeoMinoFrequencies(&CapitalGamma, &CapitalUpsilonPhi, &CapitalUpsilonTheta, &CapitalUpsilonR,
                                   a, p, e, x);
-    // }
-    
+  
 
     if ((CapitalUpsilonPhi!=CapitalUpsilonPhi) || (CapitalGamma!=CapitalGamma) || (CapitalUpsilonR!=CapitalUpsilonR) ){
         printf("(a, p, e, x) = (%f , %f , %f , %f) \n", a, p, e, x);
         throw std::invalid_argument("Nan in fundamental frequencies");
     }
     // printf("here xhi %f %f\n", CapitalUpsilonPhi, CapitalGamma);
+    *OmegaPhi_ = CapitalUpsilonPhi / CapitalGamma;
+    *OmegaTheta_ = CapitalUpsilonTheta / CapitalGamma;
+    *OmegaR_ = CapitalUpsilonR / CapitalGamma;
+
+}
+
+void KerrGeoEquatorialMinoFrequencies(double* CapitalGamma_, double* CapitalUpsilonPhi_, double* CapitalUpsilonTheta_, double* CapitalUpsilonr_,
+                              double a, double p, double e, double x)
+{
+    double M = 1.0;
+
+    double En = KerrGeoEnergy(a, p, e, x);
+    double L = KerrGeoAngularMomentum(a, p, e, x, En);
+    double Q = KerrGeoCarterConstant(a, p, e, x, En, L);
+
+    // get radial roots
+    double r1, r2, r3, r4;
+    KerrGeoRadialRoots(&r1, &r2, &r3, &r4, a, p, e, x, En, Q);
+
+    double Epsilon0 = pow(a, 2) * (1 - pow(En, 2))/pow(L, 2);
+    //double zm = 0;
+    double a2zp =(pow(L, 2) + pow(a, 2) * (-1 + pow(En, 2)) * (-1))/( (-1 + pow(En, 2)) * (-1));
+
+    double Epsilon0zp = -((pow(L, 2)+ pow(a, 2) * (-1 + pow(En, 2)) * (-1))/(pow(L, 2) * (-1)));
+
+    double zp = pow(a,2)* (1 - pow(En,2)) + pow(L,2);
+
+    double kr = sqrt((r1-r2)/(r1-r3) * (r3-r4)/(r2-r4)); //(*Eq.(13)*)
+    //double kTheta = 0; //(*Eq.(13)*)
+    double CapitalUpsilonr = (M_PI * sqrt((1 - pow(En, 2)) * (r1-r3) * (r2)))/(2 * EllipticK(pow(kr, 2))); //(*Eq.(15)*)
+    double CapitalUpsilonTheta= x * pow(zp,0.5); //(*Eq.(15)*)
+
+    double rp = M + sqrt(pow(M, 2) - pow(a, 2));
+    double rm = M - sqrt(pow(M, 2) - pow(a, 2));
+
+    double hr = (r1 - r2)/(r1 - r3);
+    double hp = ((r1 - r2) * (r3 - rp))/((r1 - r3) * (r2 - rp));
+    double hm = ((r1 - r2) * (r3 - rm))/((r1 - r3) * (r2 - rm));
+
+    // (*Eq. (21)*)
+    double CapitalUpsilonPhi = (CapitalUpsilonTheta)/(sqrt(Epsilon0zp)) + (2 * a * CapitalUpsilonr)/(M_PI * (rp - rm) * sqrt((1 - pow(En, 2)) * (r1 - r3) * (r2 - r4))) * ((2 * M * En * rp - a * L)/(r3 - rp) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rp) * EllipticPi(hp, pow(kr, 2))) - (2 * M * En * rm - a * L)/(r3 - rm) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rm) * EllipticPi(hm, pow(kr,2))));
+
+    double CapitalGamma = 4 * pow(M, 2) * En+ (2 * CapitalUpsilonr)/(M_PI * sqrt((1 - pow(En, 2)) * (r1 - r3) * (r2 - r4))) * (En/2 * ((r3 * (r1 + r2 + r3) - r1 * r2) * EllipticK(pow(kr, 2)) + (r2 - r3) * (r1 + r2 + r3 + r4) * EllipticPi(hr,pow(kr, 2)) + (r1 - r3) * (r2 - r4) * EllipticE(pow(kr, 2))) + 2 * M * En * (r3 * EllipticK(pow(kr, 2)) + (r2 - r3) * EllipticPi(hr,pow(kr, 2))) + (2* M)/(rp - rm) * (((4 * pow(M, 2) * En - a * L) * rp - 2 * M * pow(a, 2) * En)/(r3 - rp) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rp) * EllipticPi(hp, pow(kr, 2))) - ((4 * pow(M, 2) * En - a * L) * rm - 2 * M * pow(a, 2) * En)/(r3 - rm) * (EllipticK(pow(kr, 2)) - (r2 - r3)/(r2 - rm) * EllipticPi(hm,pow(kr, 2)))));
+
+    *CapitalGamma_ = CapitalGamma;
+    *CapitalUpsilonPhi_ = CapitalUpsilonPhi;
+    *CapitalUpsilonTheta_ = abs(CapitalUpsilonTheta);
+    *CapitalUpsilonr_ = CapitalUpsilonr;
+}
+
+void KerrGeoEquatorialCoordinateFrequencies(double* OmegaPhi_, double* OmegaTheta_, double* OmegaR_,
+                              double a, double p, double e, double x)
+{
+    double CapitalGamma, CapitalUpsilonPhi, CapitalUpsilonTheta, CapitalUpsilonR;
+    
+    // printf("(a, p, e, x) = (%f , %f , %f , %f) \n", a, p, e, x);
+    // if (e=0.0){
+    //     KerrCircularMinoFrequencies(&CapitalGamma, &CapitalUpsilonPhi, &CapitalUpsilonTheta, &CapitalUpsilonR,
+    //                               a, p, e, x);
+    // }
+    // else{
+        KerrGeoEquatorialMinoFrequencies(&CapitalGamma, &CapitalUpsilonPhi, &CapitalUpsilonTheta, &CapitalUpsilonR,
+                                  a, p, e, x);
+    // }
+    
     *OmegaPhi_ = CapitalUpsilonPhi / CapitalGamma;
     *OmegaTheta_ = CapitalUpsilonTheta / CapitalGamma;
     *OmegaR_ = CapitalUpsilonR / CapitalGamma;
@@ -312,8 +372,17 @@ void KerrGeoCoordinateFrequenciesVectorized(double* OmegaPhi_, double* OmegaThet
     {
         if (a[i] != 0.0)
         {
-            KerrGeoCoordinateFrequencies(&OmegaPhi_[i], &OmegaTheta_[i], &OmegaR_[i],
+            if(abs(x[i]) != 1.)
+            {
+                KerrGeoCoordinateFrequencies(&OmegaPhi_[i], &OmegaTheta_[i], &OmegaR_[i],
                                       a[i], p[i], e[i], x[i]);
+            }
+            else
+            {
+                KerrGeoEquatorialCoordinateFrequencies(&OmegaPhi_[i], &OmegaTheta_[i], &OmegaR_[i],
+                                      a[i], p[i], e[i], x[i]);
+            }
+            
         }
         else
         {
@@ -408,8 +477,8 @@ double solver (struct params_holder* params, double (*func)(double, void*), doub
 
     // printf("-----------START------------------- \n");
     // printf("xlo xhi %f %f\n", x_lo, x_hi);
-    double epsrel=1e-7;//0.001;
-
+    // double epsrel=0.001;
+    double epsrel = 1e-11; // Decreased tolorance
     do
       {
         iter++;
@@ -527,30 +596,29 @@ double get_separatrix(double a, double e, double x)
         p_sep = (3. + z2 + sign * sqrt((3. - z1) * (3. + z1 + 2. * z2)));
         return p_sep;
     }
-    else if (abs(x)==1.0)
+    else if (x == 1.0) // Eccentric Prograde Equatorial
     {
-        // Equatorial orbits
         // fills in p and Y with zeros
-        struct params_holder params = {a, 0.0, e, 1.0, 0.0};
+        struct params_holder params = {a, 0.0, e, x, 0.0};
         double x_lo, x_hi;
 
-        // solve for polar p_sep
-        if (x>0.0){
-            x_lo = 1.0 + e;
-            x_hi = 6.0 + 2.0*e;
-        }
-        else{
-            x_lo = 6.0 + 2.0*e;
-            x_hi = 5.0 + e + 4.0 * Sqrt(1.0+e) ;
-        }
+        x_lo = 1.0 + e;
+        x_hi = 6 + 2. * e;
 
-        double eq_p_sep;// = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);
-        // printf("%f", eq_p_sep);
-        eq_p_sep = solver_derivative(&params, x_lo, x_hi);
-        // printf("%f", eq_p_sep);
-        // eq_p_sep = separatrix_KerrEquatorial(a, e);
-        return eq_p_sep;
-        
+        p_sep = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);//separatrix_KerrEquatorial(a, e);//
+        return p_sep;
+    }
+    else if (x == -1.0) // Eccentric Retrograde Equatorial
+    {
+        // fills in p and Y with zeros
+        struct params_holder params = {a, 0.0, e, x, 0.0};
+        double x_lo, x_hi;
+
+        x_lo = 6 + 2. * e;
+        x_hi = 5+e+4 *Sqrt(1+e); 
+
+        p_sep = solver (&params, &separatrix_polynomial_equat, x_lo, x_hi);
+        return p_sep;
     }
     else
     {
@@ -656,11 +724,16 @@ void Y_to_xI_vector(double* x, double* a, double* p, double* e, double* Y, int l
 
 void set_threads(int num_threads)
 {
+    #ifdef __USE_OMP__
     omp_set_num_threads(num_threads);
+    #else
+    throw std::invalid_argument("Attempting to set threads for openMP, but FEW was not installed with openMP due to the use of the flag --no_omp used during installation.");
+    #endif
 }
 
 int get_threads()
 {
+#ifdef __USE_OMP__
     int num_threads;
     #pragma omp parallel for
     for (int i = 0; i < 1; i +=1)
@@ -669,6 +742,9 @@ int get_threads()
     }
 
     return num_threads;
+#else
+    return 0;
+#endif // __USE_OMP__
 }
 
 

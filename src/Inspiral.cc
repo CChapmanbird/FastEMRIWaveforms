@@ -84,6 +84,9 @@ int func_ode_wrap (double t, const double y[], double f[], void *params){
     if(sanity_check(a, p, e, x)==1){
         return GSL_EBADFUNC;
     }
+    // if(sanity_check(a, p, e, x)==1){
+    //     return GSL_EBADFUNC;
+    // }
     double p_sep = 0.0;
     if (params_in->convert_Y)
     {
@@ -221,7 +224,7 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
 		if(DENSE_STEPPING) status = gsl_odeiv2_evolve_apply_fixed_step (evolve, control, step, &sys, &t, h, y);
         else status = gsl_odeiv2_evolve_apply (evolve, control, step, &sys, &t, t1, &h, y);
 
-      	if ((status != GSL_SUCCESS) && (status != 9)){
+      	if ((status != GSL_SUCCESS) && (status != 9) && (status != -1)){
        		printf ("error, return value=%d\n", status);
           	break;
         }
@@ -254,28 +257,40 @@ InspiralHolder InspiralCarrier::run_Inspiral(double t0, double M, double mu, dou
             continue;
         }
 
+
+        if (status==-1){
+            // cout << "e=" << y[1] << "\t" << y_prev[1] << endl;
+            gsl_odeiv2_step_reset(step);
+            gsl_odeiv2_evolve_reset(evolve);
+
+             // go back to previous points
+            #pragma unroll
+            for (int i = 0; i < 6; i += 1)
+            {
+                y[i] = y_prev[i];
+            }
+            t = prev_t;
+            h = dt;
+
+            // check for number of tries to fix this
+            bad_num += 1;
+            if (bad_num >= bad_limit)
+            {
+                printf ("error, reached bad limit.\n");
+                break;
+            }
+            y[1] = 1e-9;
+            break;
+        }
+
+
         // if it made it here, reset bad num
         bad_num = 0;
 
         double p 		= y[0];
         double e 		= y[1];
         double x        = y[2];
-
-        // check eccentricity
-        if (e < 0.0)
-        {
-            // integrator may have leaked past zero
-            if (e > -1e-3)
-            {
-                e = 1e-6;
-            }
-            // integrator went way past zero throw error.
-            else 
-            {
-                throw std::invalid_argument("Error: the integrator is stepping the eccentricity too far across zero (e < -1e-3).\n");
-            }
-        }
-
+        
         // should not be needed but is safeguard against stepping past maximum allowable time
         // the last point in the trajectory will be at t = tmax
         if (t > tmax) break;
