@@ -37,6 +37,7 @@ from few.trajectory.inspiral import EMRIInspiral
 from few.amplitude.interp2dcubicspline import Interp2DAmplitude
 from few.utils.utility import get_mismatch, xI_to_Y, p_to_y, check_for_file_download
 from few.amplitude.romannet import RomanAmplitude, RomanAmplitudeGenericWrapper
+from .amplitude.pnamp import Pn5Amplitude
 from few.utils.modeselector import ModeSelector
 from few.utils.ylm import GetYlms
 from few.summation.directmodesum import DirectModeSum
@@ -45,6 +46,7 @@ from few.utils.constants import *
 from few.utils.citations import *
 from few.summation.interpolatedmodesum import InterpolatedModeSum, InterpolatedModeSumGeneric, CubicSplineInterpolant
 from few.summation.fdinterp import FDInterpolatedModeSum
+from few.summation.tfinterp import InterpolatedModeSumGenericTF
 
 class GenerateEMRIWaveform:
     """Generic waveform generator for data analysis
