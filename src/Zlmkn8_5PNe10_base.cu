@@ -546,7 +546,7 @@ cmplx hZ_3mkn(const int m, const int k, const int n, inspiral_orb_PNvar *PN_orb)
     // hZ = cmplx(0.0, 0.0);
     // printf("hZ_2mkn[%d, %d, %d, %d] \n", 2, m, k, n);
 
-    /* For ell = 3, all the zero modes are irrelevant within 5PNe10.*/
+    // For ell = 3, all the zero modes are irrelevant within 5PNe10.
     if ((m + k + n) == 0)
     {
 
@@ -633,7 +633,7 @@ cmplx hZ_4mkn(const int m, const int k, const int n, inspiral_orb_PNvar *PN_orb)
     cmplx hZ = {0.0};
     // printf("hZ_2mkn[%d, %d, %d, %d] \n", 2, m, k, n);
 
-    /* For ell = 4, all the zero modes are irrelevant within  5PNe10*/
+    // For ell = 4, all the zero modes are irrelevant within  5PNe10
     if ((m + k + n) == 0)
     {
 
