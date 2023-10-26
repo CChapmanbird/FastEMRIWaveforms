@@ -27,7 +27,7 @@ import warnings
 
 # check if cupy is available / GPU is available
 try:
-    import cupy as xp
+    import cupy as cp
 
 except (ImportError, ModuleNotFoundError) as e:
     import numpy as xp
