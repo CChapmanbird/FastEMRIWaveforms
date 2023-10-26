@@ -233,7 +233,7 @@ class AmpInterp2D(AmplitudeBase, SchwarzschildEccentric, ParallelModuleBase):
         self.tck = [
             self.xp.asarray(example_spl.tck[0]), 
             self.xp.asarray(example_spl.tck[1]), 
-            self.xp.asarray(tck_last_entry.flatten().copy())
+            self.xp.asarray(tck_last_entry.copy())
         ]
         self.degrees = example_spl.degrees
 
@@ -305,22 +305,34 @@ class AmpInterp2D(AmplitudeBase, SchwarzschildEccentric, ParallelModuleBase):
         mw = w.shape[0]
         mu = u.shape[0]
 
-        # TODO: adjustable
-        mode_indexes = self.xp.arange(self.num_teuk_modes)
-        num_modes_here = len(mode_indexes)
-        
         assert mw == mu
+
+        # TODO: adjustable
+
+        if specific_modes is None:
+            mode_indexes = self.xp.arange(self.num_teuk_modes)
         
-        num_indiv_c = 2 * num_modes_here  # Re and Im
+        else:
+            mode_indexes = self.xp.zeros(len(specific_modes), dtype=self.xp.int32)
+
+            for i, (l, m, n) in enumerate(specific_modes):
+                try:
+                    mode_indexes[i] = np.where((self.l_arr == l) & (self.m_arr == m) & (self.n_arr == n))[0]
+                except:
+                    raise Exception(f"Could not find mode index ({l},{m},{n}).")
+            mode_indexes = self.xp.arange(6000)
+        c_in = c[mode_indexes].flatten()
+
+        num_indiv_c = 2*len(mode_indexes)  # Re and Im
         len_indiv_c = self.len_indiv_c
 
         z = self.xp.zeros((num_indiv_c * mw))
         
-        self.interp2D(z, tw, nw, tu, nu, c, kw, ku, w, mw, u, mu, num_indiv_c, len_indiv_c)
+        self.interp2D(z, tw, nw, tu, nu, c_in, kw, ku, w, mw, u, mu, num_indiv_c, len_indiv_c)
 
         #check = np.asarray([[spl.ev(e.get(), y.get()) for spl in spl1] for spl1 in self.spl2D.values()]).transpose(2, 1, 0)
 
-        z = z.reshape(num_modes_here, 2, w.shape[0]).transpose(2, 1, 0)
+        z = z.reshape(num_indiv_c//2, 2, mw).transpose(2, 1, 0)
 
         z = z[:, 0] + 1j * z[:, 1]
         return z
@@ -356,7 +368,7 @@ class AmpInterpKerrEqEcc(AmplitudeBase, SchwarzschildEccentric, ParallelModuleBa
 
             self.spin_information_holder_prograde[i] = AmpInterp2D(fp, use_gpu=self.use_gpu)
 
-    def get_amplitudes(self, a, p, e, xI):
+    def get_amplitudes(self, a, p, e, xI, specific_modes=None):
 
         assert isinstance(a, float)
 
@@ -368,7 +380,7 @@ class AmpInterpKerrEqEcc(AmplitudeBase, SchwarzschildEccentric, ParallelModuleBa
             a_in = np.full_like(p, a)
             xI_in = np.ones_like(p)
             
-            z = self.spin_information_holder_prograde[ind_1](a_in, p, e, xI_in)
+            z = self.spin_information_holder_prograde[ind_1](a_in, p, e, xI_in, specific_modes=specific_modes)
 
         else:
             ind_above = np.where(self.spin_values > a)[0][0]
@@ -387,8 +399,8 @@ class AmpInterpKerrEqEcc(AmplitudeBase, SchwarzschildEccentric, ParallelModuleBa
 
             xI_in = np.ones_like(p)
 
-            z_above = self.spin_information_holder_prograde[ind_above](a_above, p, e, xI_in)
-            z_below = self.spin_information_holder_prograde[ind_below](a_below, p, e, xI_in)
+            z_above = self.spin_information_holder_prograde[ind_above](a_above, p, e, xI_in, specific_modes=specific_modes)
+            z_below = self.spin_information_holder_prograde[ind_below](a_below, p, e, xI_in, specific_modes=specific_modes)
 
             z = ((z_above - z_below) / (a_above_single - a_below_single)) * (a - a_below_single) - z_below
 
