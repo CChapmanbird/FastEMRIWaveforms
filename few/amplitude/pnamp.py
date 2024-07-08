@@ -23,7 +23,7 @@ import numpy as np
 import h5py
 
 # Cython/C++ imports
-#from pycpupnamp import Zlmkn8_5PNe10 as Zlmkn8_5PNe10_cpu
+from pycpupnamp import Zlmkn8_5PNe10 as Zlmkn8_5PNe10_cpu
 
 # Python imports
 from few.utils.baseclasses import Pn5AdiabaticAmp, AmplitudeBase, ParallelModuleBase
@@ -33,7 +33,7 @@ from few.utils.citations import *
 # check for cupy and GPU version of pymatmul
 try:
     # Cython/C++ imports
-    from pypnamp import Zlmkn8_5PNe10, Zlmkn8_5PNe10
+    from pypnamp import Zlmkn8_5PNe10#, Zlmkn8_5PNe10
 
     # Python imports
     import cupy as cp
@@ -130,8 +130,8 @@ class Pn5Amplitude(AmplitudeBase, Pn5AdiabaticAmp, ParallelModuleBase):
         if self.use_gpu:
             self.Zlmkn8_5PNe10 = Zlmkn8_5PNe10
 
-        #else:
-            #self.Zlmkn8_5PNe10 = Zlmkn8_5PNe10_cpu
+        else:
+            self.Zlmkn8_5PNe10 = Zlmkn8_5PNe10_cpu
 
     @property
     def citation(self):

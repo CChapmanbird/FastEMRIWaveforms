@@ -24,12 +24,16 @@ import warnings
 import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy.optimize import brentq
+from few.utils.spline import BicubicSpline
 
 from pyUtility import (
     pyKerrGeoCoordinateFrequencies,
     pyGetSeparatrix,
     pyKerrGeoConstantsOfMotionVectorized,
+    pyELQ_to_pex,
     pyY_to_xI_vector,
+    pyKerrEqSpinFrequenciesCorr,
+    set_threads_wrap,
 )
 
 # check to see if cupy is available for gpus
@@ -47,6 +51,7 @@ except (ImportError, ModuleNotFoundError) as e:
 
 import few
 from few.utils.constants import *
+from few.utils.spline import TricubicSpline
 
 # get path to this file
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -158,11 +163,93 @@ def p_to_y(p, e, use_gpu=False):
 
     """
     if use_gpu:
-        return cp.log(-(21 / 10) - 2 * e + p)
+        e_cp = cp.asarray(e)
+        p_cp = cp.asarray(p)
+        return cp.log(-(21 / 10) - 2 * e_cp + p_cp)
 
     else:
         return np.log(-(21 / 10) - 2 * e + p)
 
+
+def kerr_p_to_u(a, p, e, xI, use_gpu=False):
+    """Convert from separation :math:`p` to :math:`y` coordinate
+
+    Conversion from the semilatus rectum or separation :math:`p` to :math:`y`.
+
+    arguments:
+        p (double scalar or 1D double xp.ndarray): Values of separation,
+            :math:`p`, to convert.
+        e (double scalar or 1D double xp.ndarray): Associated eccentricity values
+            of :math:`p` necessary for conversion.
+        use_gpu (bool, optional): If True, use Cupy/GPUs. Default is False.
+
+    """
+    xp = cp if use_gpu else np
+
+    scalar = False
+    if isinstance(a, float):
+        scalar = True
+
+    delta_p = 0.05
+    alpha = 4.0
+
+    pLSO = get_separatrix(a, e, xI)
+    beta = alpha - delta_p
+    u = xp.log((p + beta - pLSO) / alpha)
+
+    if xp.any(u < -1e9):
+        raise ValueError("u values are too far below zero.")
+
+    # numerical errors
+    if scalar:
+        u = max(u, 0)
+    else:
+        u[u < 0.0] = 0.0
+
+    return u
+
+def ELQ_to_pex(a, E, Lz, Q):
+    """Convert from separation :math:`p` to :math:`y` coordinate
+
+    Conversion from the semilatus rectum or separation :math:`p` to :math:`y`.
+
+    arguments:
+        p (double scalar or 1D double xp.ndarray): Values of separation,
+            :math:`p`, to convert.
+        e (double scalar or 1D double xp.ndarray): Associated eccentricity values
+            of :math:`p` necessary for conversion.
+        use_gpu (bool, optional): If True, use Cupy/GPUs. Default is False.
+    """
+    # check if inputs are scalar or array
+    if isinstance(E, float):
+        scalar = True
+
+    else:
+        scalar = False
+
+    E_in = np.atleast_1d(E)
+    Lz_in = np.atleast_1d(Lz)
+    Q_in = np.atleast_1d(Q)
+
+    # cast the spin to the same size array as p
+    if isinstance(a, float):
+        a_in = np.full_like(E_in, a)
+    else:
+        a_in = np.atleast_1d(a)
+
+    assert len(a_in) == len(E_in)
+
+    # get frequencies
+    p, e, x = pyELQ_to_pex(
+        a_in, E_in, Lz_in, Q_in
+    )
+
+    # set output to shape of input
+    if scalar:
+        return (p[0], e[0], x[0])
+
+    else:
+        return (p, e, x)
 
 def get_fundamental_frequencies(a, p, e, x):
     """Get dimensionless fundamental frequencies.
@@ -211,6 +298,60 @@ def get_fundamental_frequencies(a, p, e, x):
     OmegaPhi, OmegaTheta, OmegaR = pyKerrGeoCoordinateFrequencies(
         a_in, p_in, e_in, x_in
     )
+
+    # set output to shape of input
+    if scalar:
+        return (OmegaPhi[0], OmegaTheta[0], OmegaR[0])
+
+    else:
+        return (OmegaPhi, OmegaTheta, OmegaR)
+
+
+def get_fundamental_frequencies_spin_corrections(a, p, e, x):
+    """Get dimensionless fundamental frequencies.
+
+    Determines fundamental frequencies in generic Kerr from
+    `Schmidt 2002 <https://arxiv.org/abs/gr-qc/0202090>`_.
+
+    arguments:
+        a (double scalar or 1D np.ndarray): Dimensionless spin of massive
+            black hole. If other parameters are arrays and the spin is scalar,
+            it will be cast to a 1D array.
+        p (double scalar or 1D double np.ndarray): Values of separation,
+            :math:`p`.
+        e (double scalar or 1D double np.ndarray): Values of eccentricity,
+            :math:`e`.
+        x (double scalar or 1D double np.ndarray): Values of cosine of the
+            inclination, :math:`x=\cos{I}`. Please note this is different from
+            :math:`Y=\cos{\iota}`.
+
+    returns:
+        tuple: Tuple of (OmegaPhi, OmegaTheta, OmegaR).
+            These are 1D arrays or scalar values depending on inputs.
+
+    """
+
+    # check if inputs are scalar or array
+    if isinstance(p, float):
+        scalar = True
+
+    else:
+        scalar = False
+
+    p_in = np.atleast_1d(p)
+    e_in = np.atleast_1d(e)
+    x_in = np.atleast_1d(x)
+
+    # cast the spin to the same size array as p
+    if isinstance(a, float):
+        a_in = np.full_like(p_in, a)
+    else:
+        a_in = np.atleast_1d(a)
+
+    assert len(a_in) == len(p_in)
+
+    # get frequencies
+    OmegaPhi, OmegaTheta, OmegaR = pyKerrEqSpinFrequenciesCorr(a_in, p_in, e_in, x_in)
 
     # set output to shape of input
     if scalar:
@@ -415,6 +556,65 @@ def get_separatrix(a, e, x):
     else:
         return separatrix
 
+def read_spline_datafile(fname):
+    # Open the file in read mode
+    with open(fname, "r") as file:
+        # Read the contents of the file into a list
+        lines = file.readlines()
+
+    # Initialize an empty two-dimensional list
+    data = []
+
+    # Loop through each line in the file
+    for line in lines:
+        # Split the line into a list of values using a comma delimiter
+        values = line.strip().split(" ")
+
+        # Convert each value to a float and append to the two-dimensional list
+        # data.append([np.float128(value) for value in values])
+        data.append([np.float64(value) for value in values])
+    
+    return np.asarray(data)
+
+# TODO: initialise this properly from the coefficients files, rather than all this stuff getting run every time
+
+CHI2_SCALE = 3
+CHI2_AMAX = 0.99998
+CHI2_EMIN, CHI2_EMAX = 0.0, 0.9
+
+def chi2_to_a(chi2):
+    ymin = (1-CHI2_AMAX)**(1/CHI2_SCALE)
+    ymax = (1+CHI2_AMAX)**(1/CHI2_SCALE)
+    return 1-(chi2*(ymax-ymin)+ymin)**CHI2_SCALE
+
+def a_to_chi2(a):
+    y = (1-a)**(1/CHI2_SCALE)
+    ymin = (1-CHI2_AMAX)**(1/CHI2_SCALE)
+    ymax = (1+CHI2_AMAX)**(1/CHI2_SCALE)
+    return (y-ymin)/(ymax-ymin)
+
+Nx1 = 128
+Nx2 = 128
+
+x1 = np.linspace(0,1,num=Nx1)
+x2 = np.linspace(CHI2_EMIN**0.5,CHI2_EMAX**0.5,num=Nx2)
+chi2, sqrtecc = np.meshgrid(x1,x2, indexing='ij')
+
+spin = chi2_to_a(chi2.flatten())
+e = sqrtecc.flatten()**2
+to_interp = get_separatrix(np.abs(spin), e, np.sign(spin)*1.0)/(6.+2.*e)
+
+reshapedF = np.asarray(to_interp).reshape((Nx1, Nx2))
+
+PSEP_INTERPOLANT = BicubicSpline(x1, x2, reshapedF, bc="E(3)")
+
+def get_separatrix_interpolant(a, e, x):
+    a_sign = a*x
+    w = e**0.5
+    chi2 = a_to_chi2(a_sign)
+
+    return PSEP_INTERPOLANT(chi2, w) * (6 + 2*e)
+
 
 def get_mu_at_t(
     traj_module,
@@ -562,7 +762,10 @@ def get_at_t(
         inputs.insert(ind_interest, val)
         traj_kwargs["T"] = t_out * 2.0
         out = traj(*inputs, **traj_kwargs)
-        return out[0][-1] - t_out * YRSID_SI
+        try:
+            return out[0][-1] - t_out * YRSID_SI
+        except IndexError:  # trajectory must have started at p_sep
+            return - t_out * YRSID_SI
 
     root = brentq(
         get_time_root,
@@ -641,7 +844,7 @@ def get_p_at_t(
             )  # should be fairly close.
         else:
             p_sep = 6 + 2 * traj_args[index_of_e]
-        bounds = [p_sep + 0.1, 16.0 + 2 * traj_args[index_of_e]]
+        bounds = [p_sep + 0.2, 16.0 + 2 * traj_args[index_of_e]]
 
     elif bounds[0] is None:
         if not enforce_schwarz_sep:
@@ -650,7 +853,7 @@ def get_p_at_t(
             )  # should be fairly close.
         else:
             p_sep = 6 + 2 * traj_args[index_of_e]
-        bounds[0] = p_sep + 0.1
+        bounds[0] = p_sep + 0.2
 
     elif bounds[1] is None:
         bounds[1] = 16.0 + 2 * traj_args[index_of_e]
@@ -712,41 +915,40 @@ def get_mu_at_t(
 
 
 # data history is saved here nased on version nunber
-record_by_version = {
-    "1.0.0": 3981654,
-    "1.1.0": 3981654,
-    "1.1.1": 3981654,
-    "1.1.2": 3981654,
-    "1.1.3": 3981654,
-    "1.1.4": 3981654,
-    "1.1.5": 3981654,
-    "1.2.0": 3981654,
-    "1.2.1": 3981654,
-    "1.2.2": 3981654,
-    "1.3.0": 3981654,
-    "1.3.1": 3981654,
-    "1.3.2": 3981654,
-    "1.3.3": 3981654,
-    "1.3.4": 3981654,
-    "1.3.5": 3981654,
-    "1.3.6": 3981654,
-    "1.3.7": 3981654,
-    "1.4.0": 3981654,
-    "1.4.1": 3981654,
-    "1.4.2": 3981654,
-    "1.4.3": 3981654,
-    "1.4.4": 3981654,
-    "1.4.5": 3981654,
-    "1.4.6": 3981654,
-    "1.4.7": 3981654,
-    "1.4.8": 3981654,
-    "1.4.9": 3981654,
-    "1.4.10": 3981654,
-    "1.4.11": 3981654,
-    "1.5.0": 3981654,
-    "1.5.1": 3981654,
-    "1.5.2": 3981654,
-}
+# record_by_version = {
+#     "1.0.0": 3981654,
+#     "1.1.0": 3981654,
+#     "1.1.1": 3981654,
+#     "1.1.2": 3981654,
+#     "1.1.3": 3981654,
+#     "1.1.4": 3981654,
+#     "1.1.5": 3981654,
+#     "1.2.0": 3981654,
+#     "1.2.1": 3981654,
+#     "1.2.2": 3981654,
+#     "1.3.0": 3981654,
+#     "1.3.1": 3981654,
+#     "1.3.2": 3981654,
+#     "1.3.3": 3981654,
+#     "1.3.4": 3981654,
+#     "1.3.5": 3981654,
+#     "1.3.6": 3981654,
+#     "1.3.7": 3981654,
+#     "1.4.0": 3981654,
+#     "1.4.1": 3981654,
+#     "1.4.2": 3981654,
+#     "1.4.3": 3981654,
+#     "1.4.4": 3981654,
+#     "1.4.5": 3981654,
+#     "1.4.6": 3981654,
+#     "1.4.7": 3981654,
+#     "1.4.8": 3981654,
+#     "1.4.9": 3981654,
+#     "1.4.10": 3981654,
+#     "1.4.11": 3981654,
+#     "1.5.0": 3981654,
+#     "1.5.1": 3981654,
+# }
 
 
 def check_for_file_download(fp, few_dir, version_string=None):
@@ -770,23 +972,23 @@ def check_for_file_download(fp, few_dir, version_string=None):
     """
 
     # make sure version_string is available
-    if version_string is not None:
-        if version_string not in record_by_version:
-            raise ValueError(
-                "The version_string provided ({}) does not exist.".format(
-                    version_string
-                )
-            )
-    else:
-        version_string = few.__version__
+    # if version_string is not None:
+    #     if version_string not in record_by_version:
+    #         raise ValueError(
+    #             "The version_string provided ({}) does not exist.".format(
+    #                 version_string
+    #             )
+    #         )
+    # else:
+    #     version_string = few.__version__
 
-    # check if the files directory exists
-    try:
-        os.listdir(few_dir + "few/files/")
+    # # check if the files directory exists
+    # try:
+    #     os.listdir(few_dir + "few/files/")
 
-    # if not, create it
-    except OSError:
-        os.mkdir(few_dir + "few/files/")
+    # # if not, create it
+    # except OSError:
+    #     os.mkdir(few_dir + "few/files/")
 
     # check if the file is in the files filder
     # if not, download it from zenodo
@@ -798,7 +1000,10 @@ def check_for_file_download(fp, few_dir, version_string=None):
         )
 
         # get record number based on version
-        record = record_by_version.get(version_string)
+        # record = record_by_version.get(version_string)
+
+        # temporary fix
+        record = 3981654
 
         # url to zenodo API
         url = "https://zenodo.org/record/" + str(record) + "/files/" + fp
@@ -937,3 +1142,83 @@ def get_ode_function_options():
         raise ValueError("ODE files not built yet.")
 
     return ode_options
+
+def augment_ODE_func_name(inspiral_kwargs):
+    """
+    If not integrating phases or constants of motion, augment the name of the function correctly before passing to inspiral generator
+    """
+    inspiral_kwargs_check = inspiral_kwargs.copy()
+    try:
+        kw = inspiral_kwargs_check.pop('integrate_constants_of_motion')
+        if kw:
+            inspiral_kwargs_check["func"] += "_ELQ"
+    except KeyError:
+        pass
+    try:
+        kw = inspiral_kwargs_check.pop('integrate_phases')
+        if not kw:
+            inspiral_kwargs_check["func"] += "_nofrequencies"
+    except KeyError:
+        pass
+
+    return inspiral_kwargs_check
+
+def omp_set_num_threads(num_threads=1):
+    """Globally sets OMP_NUM_THREADS
+
+    Args:
+        num_threads (int, optional):
+        Number of parallel threads to use in OpenMP.
+            Default is 1.
+
+    """
+    set_threads_wrap(num_threads)
+
+def resonance_jump_spline_from_file(fn):
+
+    grid = np.loadtxt(fn)
+    a = np.unique(grid[:,0])
+    e = np.unique(grid[:,1])
+    x = np.unique(grid[:,2])
+
+    jumps = grid[:,3]
+    jumps = (jumps - jumps.mean()) * 1e-8
+    jumps = jumps.reshape((a.size,e.size,x.size))
+
+    spl = TricubicSpline(a,e,x,jumps)
+    return spl
+
+def get_default_orbital_resonance_model_for_function(fun, which_resonances=None):
+    if which_resonances is None:
+        which_resonances = []
+    if fun == "pn5":
+        resdict = {
+            (4, 5) : {
+                1: resonance_jump_spline_from_file(os.path.join(dir_path, "./../../few/files/ResonanceSurface45.dat")),
+            },
+            (2, 3) : {
+                1: resonance_jump_spline_from_file(os.path.join(dir_path, "./../../few/files/ResonanceSurface23.dat")),
+            }
+        }
+
+    else:
+        return None
+
+    if which_resonances == "all":
+        return resdict
+
+    outdict = {}
+    # ensure the list of resonances is sorted
+    resonance_ratios = [rh[0]/rh[1] for rh in which_resonances]
+    which_resonances_sort = [which_resonances[kh] for kh in np.flip(np.argsort(resonance_ratios))]
+    for keepres in which_resonances_sort:
+        try:
+            outdict[keepres] = resdict[keepres]
+        except KeyError:
+            raise ValueError(f"The resonance {keepres} is not included in the model definition.")
+
+    return outdict
+
+
+# if __name__ == "__main__":
+#     get_default_orbital_resonance_model_for_function("pn5")

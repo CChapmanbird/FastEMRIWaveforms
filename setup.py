@@ -243,7 +243,7 @@ with open(fp_out_name, "w") as fp_out:
 
 # gather pn amplitude files
 files_for_pn_amp = []
-lmax_pn = 10
+lmax_pn = 4
 for l in range(2, lmax_pn + 1):
     path = f"hat_Zlmkn8_5PNe10/ell={l}/"
     for fp in os.listdir("src/" + path):
@@ -358,6 +358,7 @@ inspiral_ext = Extension(
     sources=[
         "src/Utility.cc",
         "src/Interpolant.cc",
+        "src/spline.cpp",
         "src/dIdt8H_5PNe10.cc",
         "src/ode.cc",
         "src/Inspiral.cc",
@@ -374,7 +375,7 @@ par_map_ext = Extension(
 
 fund_freqs_ext = Extension(
     "pyUtility",
-    sources=["src/Utility.cc", "src/utility_functions.pyx"],
+    sources=["src/spline.cpp","src/Utility.cc", "src/utility_functions.pyx"],
     **cpu_extension,
 )
 

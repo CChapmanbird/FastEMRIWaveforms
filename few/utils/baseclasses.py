@@ -822,7 +822,7 @@ class Pn5AdiabaticAmp(ParallelModuleBase, ABC):
         self.needs_Y = True
 
         # set mode index settings
-        self.lmax = 10  #  10
+        self.lmax = 4  #  10
         self.nmax = 10  
 
         self.ndim = 3
@@ -1010,7 +1010,6 @@ class Pn5AdiabaticAmp(ParallelModuleBase, ABC):
                 "Y0 is greater than 1 or less than -1. Must be between -1 and 1."
             )
 
-
 class TrajectoryBase(ABC):
     """Base class used for trajectory modules.
 
@@ -1058,6 +1057,7 @@ class TrajectoryBase(ABC):
         err=1e-10,
         use_rk4=False,
         fix_t=False,
+        integrate_backwards=False,
         **kwargs,
     ):
         """Call function for trajectory interface.
@@ -1122,12 +1122,22 @@ class TrajectoryBase(ABC):
         kwargs["err"] = err
         kwargs["DENSE_STEPPING"] = DENSE_STEPPING
         kwargs["use_rk4"] = use_rk4
+        kwargs["integrate_backwards"] = integrate_backwards
 
         # convert from years to seconds
         T = T * YRSID_SI
 
         # inspiral generator that must be added to each trajectory class
         out = self.get_inspiral(*args, **kwargs)
+
+        # t = out[0]
+        # params = out[1:]
+
+        if integrate_backwards == True:
+            out_list = list(out)
+            for i in range(4,7):
+                out_list[i] = out_list[i][0] + out_list[i][-1] - out_list[i]
+            out = tuple(out_list)
 
         # get time separate from the rest of the params
         t = out[0]
@@ -1166,7 +1176,6 @@ class TrajectoryBase(ABC):
         # upsample everything
         out = tuple([spl(new_t) * (new_t < t[-1]) for spl in splines])
         return (new_t,) + out
-
 
 class SummationBase(ABC):
     """Base class used for summation modules.

@@ -558,7 +558,23 @@ class InterpolatedModeSumGeneric(SummationBase, GenericWaveform, ParallelModuleB
         y_all[-2] = Phi_theta
         y_all[-1] = Phi_r
 
-        spline = CubicSplineInterpolant(t, y_all, use_gpu=self.use_gpu)
+        #  handle discontinuities
+        dt_arr_thr = xp.diff(t) < 1e-14
+        if dt_arr_thr.sum() == 0:
+            spline = CubicSplineInterpolant(t, y_all, use_gpu=self.use_gpu)
+            interp_array = spline.interp_array.reshape(spline.reshape_shape).transpose((0, 2, 1)).flatten().copy()
+        else:
+            discontinuities = xp.where(dt_arr_thr)[0]
+            segment_starts = xp.r_[-1, discontinuities] + 1
+            segment_ends = xp.r_[discontinuities, init_len]
+            interp_array = xp.zeros((4, ninterps, init_len))
+            for start, end in zip(segment_starts, segment_ends):
+                if end-start < 4:
+                    print("Warning: either pre- or post- resonance waveform segment is poorly sampled. Decrease integrator error.")
+                y_here = y_all[:,start:end]
+                spline_here = CubicSplineInterpolant(t[start:end], y_here, use_gpu=self.use_gpu)
+                interp_array[:,:,start:end] = spline_here.interp_array.reshape(spline_here.reshape_shape).transpose((0, 2, 1))
+            interp_array = interp_array.flatten().copy()
 
         new_time_vals = xp.arange(data_length) * dt
 
@@ -572,7 +588,7 @@ class InterpolatedModeSumGeneric(SummationBase, GenericWaveform, ParallelModuleB
         # TODO: make better spline interp_arry part?
         self.get_waveform(
             self.waveform,
-            spline.interp_array.reshape(spline.reshape_shape).transpose((0, 2, 1)).flatten().copy(),
+            interp_array,
             m_arr.astype(xp.int32),
             k_arr.astype(xp.int32),
             n_arr.astype(xp.int32), 
