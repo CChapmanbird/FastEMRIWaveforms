@@ -1,0 +1,46 @@
+name: Build and Test Wheels
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-gpu-wheel:
+    name: wheel-${{matrix.python-version}}-cuda${{matrix.cuda-version}}-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"] #, "macos-latest", "windows-latest"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        cuda-version: ["11x", "12x"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          mamba-version: "*"
+          channels: conda-forge, pytorch, nvidia
+          environment-file: environment.yml
+
+      - name: Install CuPy
+        run: pip install cupy-cuda${{matrix.cuda-version}}
+
+      - name: Run Prebuild
+        run: |
+          cp scripts/prebuild.py ./
+          python prebuild.py
+        
+      - name: Pip install
+        shell: bash -el {0}
+        run: pip install .
+
+      - name: Run Tests
+        run: python -m unittest discover
+
+      - name: build wheels
+        run: |
+          pip install build twine
+          python -m build .
