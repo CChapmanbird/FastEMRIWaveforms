@@ -30,7 +30,7 @@ jobs:
           mamba-version: "*"
           channels: conda-forge, pytorch, nvidia
           environment-file: environment.yml
-          activate-environment: test
+          activate-environment: test_gpu_install_env
           
       - name: Install CuPy
         run: mamba install -c conda-forge cuda
