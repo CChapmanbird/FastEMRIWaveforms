@@ -297,6 +297,9 @@ class SchwarzschildEccentric(ParallelModuleBase, ABC):
                 np.asarray([self.l_arr, self.m_arr]).T, axis=0, return_inverse=True
             )
 
+        # squeeze to remove the second dimension (numpy 2.* support)
+        self.inverse_lm = np.squeeze(self.inverse_lm)
+
         # unique values of l and m
         self.unique_l, self.unique_m = xp.asarray(temp).T
 
