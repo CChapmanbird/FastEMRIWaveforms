@@ -383,6 +383,10 @@ setup(
     ext_modules=extensions,
     packages=["few", "few.utils", "few.trajectory", "few.amplitude", "few.summation"],
     py_modules=["few.waveform"],
+    setup_requires=[
+        'setuptools>=40.8.0',
+        'cython',
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License (GPL)",

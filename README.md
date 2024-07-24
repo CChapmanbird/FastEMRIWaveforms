@@ -189,6 +189,7 @@ Current Version: 1.5.5
 * Soichiro Isoyama
 * Ryuichi Fujita
 * Monica Rizzo
+* Daniel Williams
 
 ## License
 
