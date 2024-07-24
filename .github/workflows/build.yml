@@ -42,7 +42,7 @@ jobs:
         
       - name: Pip install
         shell: bash -el {0}
-        run: pip install .
+        run: python -m pip install .
 
       - name: Run Tests
         shell: bash -el {0}
@@ -51,5 +51,5 @@ jobs:
       - name: build wheels
         shell: bash -el {0}
         run: |
-          pip install build twine
+          python -m pip install build twine
           python -m build .
