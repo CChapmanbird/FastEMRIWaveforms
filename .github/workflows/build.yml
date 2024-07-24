@@ -39,9 +39,11 @@ jobs:
         run: pip install .
 
       - name: Run Tests
+        shell: bash -el {0}
         run: python -m unittest discover
 
       - name: build wheels
+        shell: bash -el {0}
         run: |
           pip install build twine
           python -m build .
