@@ -33,7 +33,7 @@ jobs:
           activate-environment: test_gpu_install_env
           
       - name: Install CuPy
-        run: mamba install -c conda-forge cuda
+        run: mamba install -c conda-forge cupy
 
       - name: Run Prebuild
         run: |
