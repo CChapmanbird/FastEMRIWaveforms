@@ -41,7 +41,8 @@ jobs:
       - name: Diagnose cuda things
         run: |
           mamba install conda
-          python -c "import conda.plugins.virtual_packages.cuda as cuda; print(cuda.cuda_version())"
+          python -c "import conda.plugins.virtual_packages.cuda as cuda; print("Conda sees cuda:", cuda.cuda_version())"
+          echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
 
       - name: Install CuPy
         run: mamba install -c conda-forge cupy
