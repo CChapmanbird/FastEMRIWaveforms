@@ -26,6 +26,8 @@ jobs:
         with:
           cuda: ${{matrix.cuda-version}}
         
+      - run: nvcc -V
+
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
