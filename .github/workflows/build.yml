@@ -28,7 +28,6 @@ jobs:
         
       - run: |
           nvcc -V
-          conda list
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -39,8 +38,8 @@ jobs:
           environment-file: environment.yml
           activate-environment: test_gpu_install_env
           
-      - name: Install cuda via conda
-        run: mamba install -c nvidia cuda
+      - name: Enforce cuda version via conda
+        run: mamba install -c conda-forge cuda-version=${{ matrix.cuda-version }}
 
       - name: Install CuPy
         run: mamba install -c conda-forge cupy
