@@ -48,6 +48,7 @@ jobs:
       - name: Diagnose part 2
         run: |
           echo "$PATH"
+          python -c "import ctypes; dll = ctypes.cdll; print(dll.LoadLibrary('libcuda.so')) " 
           python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
 
       - name: Install CuPy
