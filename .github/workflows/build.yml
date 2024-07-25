@@ -28,7 +28,7 @@ jobs:
         
       - run: |
           nvcc -V
-          nvidia-smi
+          conda list
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
