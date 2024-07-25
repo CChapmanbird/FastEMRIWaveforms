@@ -39,6 +39,9 @@ jobs:
           environment-file: environment.yml
           activate-environment: test_gpu_install_env
           
+      - name: Install cuda via conda
+        run: mamba install -c nvidia cuda
+
       - name: Install CuPy
         run: mamba install -c conda-forge cupy
 
