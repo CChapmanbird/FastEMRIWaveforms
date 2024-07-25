@@ -38,8 +38,10 @@ jobs:
           environment-file: environment.yml
           activate-environment: test_gpu_install_env
           
-      - name: Enforce cuda version via conda
-        run: mamba install -c conda-forge cuda-version=${{ matrix.cuda-version }}
+      - name: Diagnose cuda things
+        run: |
+          mamba install conda
+          python -c "import conda.plugins.virtual_packages.cuda as cuda; print(cuda.cuda_version())"
 
       - name: Install CuPy
         run: mamba install -c conda-forge cupy
