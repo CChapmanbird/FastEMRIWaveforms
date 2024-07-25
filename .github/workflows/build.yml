@@ -55,7 +55,9 @@ jobs:
 
       - name: Install CuPy (tracks CUDA_PATH)
         # run: mamba install -c conda-forge cupy
-        run: pip install cupy
+        run: |
+          echo "$CUDA_PATH"
+          python -m pip install cupy
 
       - name: Run Prebuild
         run: |
