@@ -10,7 +10,7 @@ dependencies:
   - wget
   - gsl
   - hdf5
-  - numpy<2.*
+  - numpy=1.*
   - scipy
   - Cython
   - tqdm
