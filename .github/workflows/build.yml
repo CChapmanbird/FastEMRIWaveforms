@@ -39,14 +39,15 @@ jobs:
           environment-file: environment.yml
           activate-environment: test_gpu_install_env
           
-      # - name: Diagnose cuda things
-        # run: |
-          # mamba install conda
-          # python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
-          # echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
-          # echo "$CUDA_PATH" >> $GITHUB_PATH
-          # echo "$CUDA_PATH" >> $LD_LIBRARY_PATH
-          # echo "$LD_LIBRARY_PATH"
+      - name: Diagnose cuda things
+        run: |
+          mamba install conda
+          python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
+          echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+          echo "$CUDA_PATH" >> $GITHUB_PATH
+          echo "$CUDA_PATH" >> $LD_LIBRARY_PATH
+          echo "$LD_LIBRARY_PATH"
+          python -c "import ctypes; dll = ctypes.cdll; print(dll.LoadLibrary('libcuda.so')) " 
 
       # - name: Diagnose part 2
         # run: |
