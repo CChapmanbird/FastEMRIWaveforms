@@ -57,7 +57,8 @@ jobs:
         # run: mamba install -c conda-forge cupy
         run: |
           echo "$CUDA_PATH"
-          python -m pip install "cupy-cuda"${${{matrix.cuda-version}}:0:2}"x"
+          export cuda_version_part = ${{matrix.cuda-version}}
+          python -m pip install "cupy-cuda"${cuda_version_part:0:2}"x"
 
       - name: Run Prebuild
         run: |
@@ -68,6 +69,12 @@ jobs:
         run: |
           python -m pip install build twine
           python -m build .
+
+      - name: Produce artifact of wheel for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: Built wheel
+          path: ./dist/*.whl
 
       - name: Pip install the built wheel
         run: python -m pip install ./dist/*.whl
