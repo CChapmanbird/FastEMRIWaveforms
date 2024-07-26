@@ -57,7 +57,7 @@ jobs:
         # run: mamba install -c conda-forge cupy
         run: |
           echo "$CUDA_PATH"
-          python -m pip install "cupy-cuda"${{matrix.cuda_version}:0:2}"x"
+          python -m pip install "cupy-cuda"${${{matrix.cuda_version}}:0:2}"x"
 
       - name: Run Prebuild
         run: |
