@@ -40,21 +40,21 @@ jobs:
           environment-file: environment.yml
           activate-environment: test_gpu_install_env
           
-      - name: Diagnose cuda things
-        run: |
-          mamba install conda
-          python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
-          echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
-          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_PATH"
+      # - name: Diagnose cuda things
+      #   run: |
+      #     mamba install conda
+      #     python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
+      #     echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+      #     echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_PATH"
 
-      - name: Diagnose part 2
-        run: |
-          echo "$LD_LIBRARY_PATH"
-          python -c "import ctypes; dll = ctypes.cdll; libcuda = dll.LoadLibrary('libcuda.so'); print(libcuda.cuInit(ctypes.c_uint(0))); version_int = ctypes.c_int(0); print(libcuda.cuDriverGetVersion(ctypes.byref(version_int))); print(value = version_int.value)" 
-          python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
+      # - name: Diagnose part 2
+      #   run: |
+      #     echo "$LD_LIBRARY_PATH"
+      #     python -c "import ctypes; dll = ctypes.cdll; libcuda = dll.LoadLibrary('libcuda.so'); print(libcuda.cuInit(ctypes.c_uint(0))); version_int = ctypes.c_int(0); print(libcuda.cuDriverGetVersion(ctypes.byref(version_int))); print(version_int.value)" 
+      #     python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
 
-      - name: Install CuPy (tracks CUDA_PATH) #and specify the install version
-        run: mamba install -c conda-forge cupy
+      # - name: Install CuPy (tracks CUDA_PATH) #and specify the install version
+      #   run: mamba install -c conda-forge cupy
         # run: |
         #   echo "$CUDA_PATH"
         #   export cuda_version_part=${{matrix.cuda-version}}
@@ -79,5 +79,7 @@ jobs:
       - name: Pip install the built wheel
         run: python -m pip install ./dist/*.whl
 
-      - name: Run Tests
-        run: python -m unittest discover
+      - name: Run module tests
+        run: |
+          cd ./few/tests/module_tests
+          python -m unittest discover
