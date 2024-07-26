@@ -25,6 +25,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: ${{matrix.cuda-version}}
+          linux-local-args: ["--toolkit", "--driver"]
         
       - run: |
           nvcc -V
@@ -53,12 +54,12 @@ jobs:
           # python -c "import ctypes; dll = ctypes.cdll; print(dll.LoadLibrary('libcuda.so')) " 
           # python -c "import conda.plugins.virtual_packages.cuda as cuda; print('Conda sees cuda:', cuda.cuda_version())"
 
-      - name: Install CuPy (tracks CUDA_PATH) and specify the install version
-        # run: mamba install -c conda-forge cupy
-        run: |
-          echo "$CUDA_PATH"
-          export cuda_version_part = ${{matrix.cuda-version}}
-          python -m pip install "cupy-cuda"${cuda_version_part:0:2}"x"
+      - name: Install CuPy (tracks CUDA_PATH) #and specify the install version
+        run: mamba install -c conda-forge cupy
+        # run: |
+        #   echo "$CUDA_PATH"
+        #   export cuda_version_part=${{matrix.cuda-version}}
+        #   python -m pip install "cupy-cuda"${cuda_version_part:0:2}"x"
 
       - name: Run Prebuild
         run: |
