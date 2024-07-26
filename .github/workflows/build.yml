@@ -25,7 +25,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: ${{matrix.cuda-version}}
-          linux-local-args: ["--toolkit", "--driver"]
+          linux-local-args: '["--toolkit", "--driver"]'
         
       - run: |
           nvcc -V
