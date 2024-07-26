@@ -117,6 +117,8 @@ try:
 except OSError:
     run_cuda_install = False
 
+print("----------- RUNNING CUDA INSTALL:", run_cuda_install)
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
