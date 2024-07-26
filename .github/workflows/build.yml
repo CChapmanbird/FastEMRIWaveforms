@@ -26,7 +26,8 @@ jobs:
         with:
           cuda: ${{matrix.cuda-version}}
           linux-local-args: '["--toolkit", "--driver"]'
-        
+          log-file-suffix: '${{matrix.os}}-${{matrix.python-version}}-${{matrix.cuda-version}}.txt'
+
       - run: |
           nvcc -V
 
