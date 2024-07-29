@@ -21,15 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: Jimver/cuda-toolkit@v0.2.16
-        id: cuda-toolkit
-        with:
-          cuda: ${{matrix.cuda-version}}
-          linux-local-args: '["--toolkit", "--driver"]'
-          log-file-suffix: '${{matrix.os}}-${{matrix.python-version}}-${{matrix.cuda-version}}.txt'
+      # - uses: Jimver/cuda-toolkit@v0.2.16
+      #   id: cuda-toolkit
+      #   with:
+      #     cuda: ${{matrix.cuda-version}}
+      #     linux-local-args: '["--toolkit", "--driver"]'
+      #     log-file-suffix: '${{matrix.os}}-${{matrix.python-version}}-${{matrix.cuda-version}}.txt'
 
-      - run: |
-          nvcc -V
+      # - run: |
+      #     nvcc -V
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -39,7 +39,14 @@ jobs:
           channels: conda-forge, pytorch, nvidia
           environment-file: environment.yml
           activate-environment: test_gpu_install_env
-          
+      
+      - name: Install CUDA libraries with conda
+        run: |
+          mamba install -c conda-forge cupy cuda-version=${{ matrix.cuda-version }}
+          mamba install -c conda-forge cuda-nvcc cuda-cudart
+          echo $(which nvcc)
+          nvcc -V
+
       # - name: Diagnose cuda things
       #   run: |
       #     mamba install conda
