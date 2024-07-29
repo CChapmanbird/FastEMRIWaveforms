@@ -42,8 +42,7 @@ jobs:
       
       - name: Install CUDA libraries with conda
         run: |
-          mamba install -c conda-forge cupy cuda-version=${{ matrix.cuda-version }}
-          mamba install -c conda-forge cuda-nvcc cuda-cudart
+          mamba install -c conda-forge cupy cuda-nvcc cuda-cudart cuda-version=${{ matrix.cuda-version }}
           echo $(which nvcc)
           nvcc -V
 
