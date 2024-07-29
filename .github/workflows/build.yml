@@ -43,6 +43,8 @@ jobs:
       - name: Install CUDA libraries with conda
         run: |
           mamba install -c conda-forge cupy cuda-nvcc cuda-cudart cuda-version=${{ matrix.cuda-version }}
+          ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
+          echo "(CUDAHOME=$CONDA_PREFIX)" >> "$GITHUB_ENV"
           echo $(which nvcc)
           nvcc -V
 
@@ -73,6 +75,7 @@ jobs:
 
       - name: build wheels
         run: |
+          echo $CUDAHOME
           python -m pip install build twine
           python -m build .
 
