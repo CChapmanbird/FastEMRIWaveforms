@@ -105,3 +105,7 @@ jobs:
         run: |
           cd ./few/tests/module_tests
           python -m unittest discover
+
+      - name: Upload wheel to test PYPI
+        run: |
+          twine upload --repository-url https://test.pypi.org/legacy/ --username __token__ --password ${{secrets.TEST_PYPI_UPLOAD_TOKEN}} ./dist/*
