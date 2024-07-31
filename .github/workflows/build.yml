@@ -37,7 +37,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           mamba-version: "*"
           channels: conda-forge, pytorch, nvidia
-          environment-file: environment.yml
+          environment-file: environment-${{matrix.os}}.yml
           activate-environment: test_gpu_install_env
       
       - name: Install CUDA libraries with conda and link directories
