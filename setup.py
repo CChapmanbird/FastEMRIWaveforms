@@ -374,7 +374,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="fastemriwaveforms",
+    name="fastemriwaveforms-test",
     author="Michael Katz",
     author_email="mikekatz04@gmail.com",
     description="Fast and accurate EMRI Waveforms.",
