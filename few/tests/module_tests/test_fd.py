@@ -17,7 +17,11 @@ from few.utils.constants import *
 
 try:
     import cupy as xp
-
+    try:
+        test = xp.ones(10)
+        test / test
+    except xp.cuda.runtime.CUDARuntimeError:
+        raise ImportError("GPU cannot run")
     gpu_available = True
 
 except (ModuleNotFoundError, ImportError) as e:
