@@ -53,7 +53,7 @@ jobs:
       
 
       - name: Install CUDA libraries with conda and link directories
-        if: ${{ matrix.os != 'macos-latest' }}
+        if: ${{ !startsWith(matrix.os, 'macos' }}
         run: |
           mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=${{ matrix.cuda-version }}
           echo "(CUDAHOME=$CONDA_PREFIX)" >> "$GITHUB_ENV"
