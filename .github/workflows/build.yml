@@ -76,7 +76,8 @@ jobs:
         uses: pypa/cibuildwheel@v2.20.0
         with: 
           config-file: "pyproject.toml"
-      # - name: Produce artifact of wheel for testing
+
+      - name: Produce artifact of wheel for testing
         uses: actions/upload-artifact@v4
         with:
           # name: wheel-${{matrix.python-version}}-cuda${{matrix.cuda-version}}-${{matrix.os}}
