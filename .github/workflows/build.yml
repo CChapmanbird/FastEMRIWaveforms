@@ -6,7 +6,29 @@ on:
       - master
 
 jobs:
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Prebuild
+        run: |
+          cp scripts/prebuild.py ./
+          python prebuild.py
+
+      - name: Build sdist
+        run: |
+          python -m pip install build
+          python -m build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
   build-gpu-wheel:
+    needs: build_sdist
     name: wheel-${{matrix.python-version}}-cuda${{matrix.cuda-version}}-${{matrix.os}}
     runs-on: ${{ matrix.os }}
     defaults:
@@ -21,15 +43,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - uses: Jimver/cuda-toolkit@v0.2.16
-      #   id: cuda-toolkit
-      #   with:
-      #     cuda: ${{matrix.cuda-version}}
-      #     linux-local-args: '["--toolkit", "--driver"]'
-      #     log-file-suffix: '${{matrix.os}}-${{matrix.python-version}}-${{matrix.cuda-version}}.txt'
-
-      # - run: |
-      #     nvcc -V
+      - name: Get the sdist from the previous job
+        uses: actions/download-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/
 
       - uses: conda-incubator/setup-miniconda@v3
         if: ${{matrix.os != 'macos-latest'}}
@@ -51,7 +69,6 @@ jobs:
           environment-file: macos-arm-environment.yml
           activate-environment: test_gpu_install_env
       
-
       - name: Install CUDA libraries with conda and link directories
         if: ${{ !startsWith(matrix.os, 'macos') }}
         run: |
@@ -62,26 +79,15 @@ jobs:
           ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
           cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
 
-      - name: Run Prebuild
-        run: |
-          cp scripts/prebuild.py ./
-          python prebuild.py
-
-      # - name: build wheels
-      #   run: |
-      #     python -m pip install build twine
-      #     python -m build .
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.20.0
         with: 
           config-file: "pyproject.toml"
+          PACKAGE: dist/*.tar.gz
 
       - name: Produce artifact of wheel for testing
         uses: actions/upload-artifact@v4
         with:
-          # name: wheel-${{matrix.python-version}}-cuda${{matrix.cuda-version}}-${{matrix.os}}
-          # path: ./dist/*.whl
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
