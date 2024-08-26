@@ -45,6 +45,8 @@ fi
 eval "$(conda shell.bash hook)"
 conda activate test_gpu_install_env
 
+echo $(which python)
+
 if [[ $1 == "ubuntu-latest" ]]
 then
     conda install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2} -y
