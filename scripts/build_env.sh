@@ -47,7 +47,7 @@ conda activate test_gpu_install_env
 
 if [[ $1 == "ubuntu-latest" ]]
 then
-    mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2} -y
+    conda install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2} -y
     export CUDAHOME=$CONDA_PREFIX
     ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
     cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
