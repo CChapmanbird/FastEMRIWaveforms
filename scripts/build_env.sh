@@ -1,6 +1,6 @@
 
 
-if [$1 = "macos-latest"]
+if [[ $1 == "macos-latest" ]]
 then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     brew install md5sha1sum
@@ -8,8 +8,9 @@ then
     curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
     bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
     rm ~/miniconda3/miniconda.sh
+    ~/miniconda3/bin/conda init bash
     conda env create -f macos-arm-environment.yml
-elif [$1 = "macos-13"]
+elif [[ $1 == "macos-13" ]]
 then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     brew install md5sha1sum
@@ -17,19 +18,21 @@ then
     curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda3/miniconda.sh
     bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
     rm ~/miniconda3/miniconda.sh
+    ~/miniconda3/bin/conda init bash
     conda env create -f environment.yml
 else
     mkdir -p ~/miniconda3
     curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o ~/miniconda3/miniconda.sh
     bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
     rm ~/miniconda3/miniconda.sh
+    ~/miniconda3/bin/conda init bash
     conda env create -f environment.yml
 fi
 
 eval "$(conda shell.bash hook)"
 conda activate test_gpu_install_env
 
-if [$1 = "ubuntu-latest"]
+if [[ $1 == "ubuntu-latest" ]]
 then
     mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2}
     export CUDAHOME=$CONDA_PREFIX
