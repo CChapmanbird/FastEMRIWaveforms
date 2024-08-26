@@ -88,7 +88,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.20.0
         env:
-          CIBW_BEFORE_BUILD: bash build_env.sh ${{ matrix.os }} ${{ matrix.cuda-version }}
+          CIBW_BEFORE_BUILD: bash scripts/build_env.sh ${{ matrix.os }} ${{ matrix.cuda-version }}
         with: 
           config-file: "pyproject.toml"
           package-dir: $(find dist/*.tar.gz)
