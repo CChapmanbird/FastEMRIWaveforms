@@ -28,6 +28,7 @@ else
     curl -s https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o ~/miniconda3/miniconda.sh
     bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
     rm ~/miniconda3/miniconda.sh
+    echo "Conda install done"
     ~/miniconda3/bin/conda init bash
     source ~/.bashrc
     ~/miniconda3/bin/conda init bash
@@ -39,7 +40,7 @@ conda activate test_gpu_install_env
 
 if [[ $1 == "ubuntu-latest" ]]
 then
-    mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2}
+    mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2} -y
     export CUDAHOME=$CONDA_PREFIX
     ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
     cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
