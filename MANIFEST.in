@@ -1,1 +1,2 @@
 graft include
+include scripts/build_env.sh
