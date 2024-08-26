@@ -37,8 +37,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macos-latest", "macos-13"]#, "windows-latest"]
-        python-version: ["3.12"]#["3.9", "3.10", "3.11", "3.12"]
+        os: ["ubuntu-latest", "macos-latest", "macos-13"] #, "windows-latest"]
+        python-version: ["3.12"] #["3.9", "3.10", "3.11", "3.12"]
         cuda-version: ["12.4.0"]
     steps:
       - uses: actions/checkout@v4
@@ -53,40 +53,42 @@ jobs:
           ls ./
           ls ./dist/
 
-      - name: Intel env setup
-        uses: conda-incubator/setup-miniconda@v3
-        if: ${{matrix.os != 'macos-latest'}}
-        with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
-          mamba-version: "*"
-          channels: conda-forge, pytorch, nvidia
-          environment-file: environment.yml
-          activate-environment: test_gpu_install_env
+      # - name: Intel env setup
+      #   uses: conda-incubator/setup-miniconda@v3
+      #   if: ${{matrix.os != 'macos-latest'}}
+      #   with:
+      #     auto-update-conda: true
+      #     python-version: ${{ matrix.python-version }}
+      #     mamba-version: "*"
+      #     channels: conda-forge, pytorch, nvidia
+      #     environment-file: environment.yml
+      #     activate-environment: test_gpu_install_env
       
-      - name: ARM env setup
-        uses: conda-incubator/setup-miniconda@v3
-        if: ${{matrix.os == 'macos-latest'}}
-        with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
-          mamba-version: "*"
-          channels: conda-forge, pytorch, nvidia
-          environment-file: macos-arm-environment.yml
-          activate-environment: test_gpu_install_env
+      # - name: ARM env setup
+      #   uses: conda-incubator/setup-miniconda@v3
+      #   if: ${{matrix.os == 'macos-latest'}}
+      #   with:
+      #     auto-update-conda: true
+      #     python-version: ${{ matrix.python-version }}
+      #     mamba-version: "*"
+      #     channels: conda-forge, pytorch, nvidia
+      #     environment-file: macos-arm-environment.yml
+      #     activate-environment: test_gpu_install_env
       
-      - name: Install CUDA libraries with conda and link directories
-        if: ${{ !startsWith(matrix.os, 'macos') }}
-        run: |
-          mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=${{ matrix.cuda-version }}
-          echo "(CUDAHOME=$CONDA_PREFIX)" >> "$GITHUB_ENV"
-          echo $(which nvcc)
-          nvcc -V
-          ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
-          cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
+      # - name: Install CUDA libraries with conda and link directories
+      #   if: ${{ !startsWith(matrix.os, 'macos') }}
+      #   run: |
+      #     mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=${{ matrix.cuda-version }}
+      #     echo "(CUDAHOME=$CONDA_PREFIX)" >> "$GITHUB_ENV"
+      #     echo $(which nvcc)
+      #     nvcc -V
+      #     ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
+      #     cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.20.0
+        env:
+          CIBW_BEFORE_BUILD: cp scripts/build_env.sh ./ && bash build_env.sh ${{ matrix.os }} ${{ matrix.cuda-version }}
         with: 
           config-file: "pyproject.toml"
           package-dir: $(find dist/*.tar.gz)

@@ -1,0 +1,34 @@
+
+
+if [$1 = "macos-latest"]
+then
+    mkdir -p ~/miniconda3
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+    rm ~/miniconda3/miniconda.sh
+    conda env create -f macos-arm-environment.yml
+elif [$1 = "macos-13"]
+then
+    mkdir -p ~/miniconda3
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o ~/miniconda3/miniconda.sh
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+    rm ~/miniconda3/miniconda.sh
+    conda env create -f macos-arm-environment.yml
+else
+    mkdir -p ~/miniconda3
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+    rm ~/miniconda3/miniconda.sh
+    conda env create -f environment.yml
+fi
+
+eval "$(conda shell.bash hook)"
+conda activate test_gpu_install_env
+
+if [$1 = "ubuntu-latest"]
+then
+    mamba install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2}
+    export CUDAHOME=$CONDA_PREFIX
+    ln -s $CONDA_PREFIX/lib $CONDA_PREFIX/lib64
+    cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
+
