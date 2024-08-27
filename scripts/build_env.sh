@@ -58,5 +58,6 @@ then
 fi
 
 # copy the GSL and lapack files to the sdist
-# cp $CONDA_PREFIX/include/gsl ./
-export LIBRARY_PATH=$CONDA_PREFIX/lib
+cp -r $CONDA_PREFIX/include/gsl ./
+cp $CONDA_PREFIX/include/lapacke* ./
+# export LIBRARY_PATH=$CONDA_PREFIX/lib
