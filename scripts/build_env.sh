@@ -53,4 +53,5 @@ then
     conda install -c conda-forge cupy cuda-nvcc cuda-libraries-dev cuda-version=$2 -y
     export CUDAHOME=$CONDA_PREFIX
     cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
+    echo $(which nvcc)
 fi
