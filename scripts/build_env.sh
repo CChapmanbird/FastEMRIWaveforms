@@ -54,10 +54,12 @@ then
     export CUDAHOME=$CONDA_PREFIX
     cp -r $CONDA_PREFIX/targets/$(ls $CONDA_PREFIX/targets/ | head -1)/include/* $CONDA_PREFIX/include/ 
     echo $(which nvcc)
-    echo $(CUDAHOME)
+    echo $CUDAHOME
 fi
 
 # copy the GSL and lapack files to the sdist
 cp -r $CONDA_PREFIX/include/gsl ./
 cp $CONDA_PREFIX/include/lapacke* ./
 # export LIBRARY_PATH=$CONDA_PREFIX/lib
+
+ls ./
