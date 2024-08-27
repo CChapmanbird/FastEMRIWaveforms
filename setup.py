@@ -9,11 +9,6 @@ import numpy
 import shutil
 import argparse
 
-
-import subprocess
-print(subprocess.run(["which","nvcc"]))
-print(os.environ["LIBRARY_PATH"])
-
 def find_in_path(name, path):
     """Find a file in a search path"""
 
