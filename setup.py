@@ -29,9 +29,9 @@ def locate_cuda():
     Starts by looking for the CUDAHOME env variable. If not found,
     everything is based on finding 'nvcc' in the PATH.
     """
-    print("CUDAHOME:", os.environ["CUDAHOME"])
     # First check if the CUDAHOME env variable is in use
     if "CUDAHOME" in os.environ or "CUDA_HOME" in os.environ:
+        print("CUDAHOME:", os.environ["CUDAHOME"])
         try:
             home = os.environ["CUDAHOME"]
         except KeyError:
